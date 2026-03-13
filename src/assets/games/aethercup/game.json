@@ -1,0 +1,29 @@
+{
+  "id": "aethercup",
+  "anchorId": "AetherCup",
+  "navLabel": "Aether Cup",
+  "order": 2,
+  "kicker": "Featured Game",
+  "title": "Aether Cup: High-Stakes Airship Racing",
+  "intro": "Step into the fantastical, high-stakes world of the Aether Cup, where speed, navigation, and custom-built airships collide in the ultimate aerial race.",
+  "logoPath": "games/aethercup/logo/aethercuplogo.png",
+  "logoAlt": "Aether Cup Logo",
+  "features": [
+    {
+      "title": "Design Your Fleet",
+      "description": "Start your journey by printing your own fleet of ships, including Torpedo boats and Frigates based on unique English and German analogues. The current core set provides everything needed to begin, with ongoing updates planned to expand your racing horizons."
+    },
+    {
+      "title": "Master the Course",
+      "description": "Aether Cup is designed for precision play. Use specialized movement templates to navigate your airships, and keep a sharp eye on orientation with the \"Red on Right, Returning!\" rule to stay on course."
+    },
+    {
+      "title": "Built for Growth",
+      "description": "The Aether Cup universe is expanding, with new terrain models and small-scale ship variants in development, along with playtested rules for airship racing and new captain, crew, and equipment cards."
+    },
+    {
+      "title": "Play Your Way",
+      "description": "Whether you are a master ship-builder or a tactical pilot, Aether Cup offers a growing and engaging experience designed to reward creativity, precision, and skill."
+    }
+  ]
+}

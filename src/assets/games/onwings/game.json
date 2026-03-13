@@ -1,0 +1,29 @@
+{
+  "id": "onwings",
+  "anchorId": "OnWings",
+  "navLabel": "OnWings",
+  "order": 1,
+  "kicker": "Featured Game",
+  "title": "OnWings: World War II Aerial Combat",
+  "intro": "Immerse yourself in the golden age of piston-engine flight with a tabletop game built to capture the intensity, strategy, and split-second decisions of fighter-to-fighter combat.",
+  "logoPath": "games/onwings/logo/onwingslogo.png",
+  "logoAlt": "OnWings Logo",
+  "features": [
+    {
+      "title": "Tactical Depth, Simple Rules",
+      "description": "OnWings is quick-playing and exciting, with meaningful decisions every turn. The rules are easy to learn, so the focus stays on maneuver plotting, altitude management, and lining up the perfect firing position on an uncluttered battlefield."
+    },
+    {
+      "title": "The Power of Maneuver",
+      "description": "Each turn, players secretly plot maneuvers while weighing speed, G-force, and flight dynamics. Do you commit to a hard turn to break pursuit, or climb for altitude control? In OnWings, pilot intuition often decides the fight."
+    },
+    {
+      "title": "Highly Flexible and Aesthetic",
+      "description": "Whether you fly 1/144 or 1/900 scale miniatures, the system adapts to your collection. Its charming, exaggerated visual style is designed to spark imagination while giving your tabletop a unique identity."
+    },
+    {
+      "title": "Community-Driven Play",
+      "description": "From formation flying to complex dogfight scenarios, OnWings grows with your playstyle. It is built for groups who enjoy mastering tactics, experimenting with strategies, and telling great stories in every match."
+    }
+  ]
+}

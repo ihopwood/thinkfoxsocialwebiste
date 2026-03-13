@@ -1,0 +1,30 @@
+[
+  {
+    "id": "youtube",
+    "label": "YouTube",
+    "icon": "bi-youtube",
+    "href": null,
+    "type": "social"
+  },
+  {
+    "id": "instagram",
+    "label": "Instagram",
+    "icon": "bi-instagram",
+    "href": null,
+    "type": "social"
+  },
+  {
+    "id": "discord",
+    "label": "Discord",
+    "icon": "bi-discord",
+    "href": null,
+    "type": "social"
+  },
+  {
+    "id": "patreon",
+    "label": "Patreon",
+    "icon": "bi-p-circle-fill",
+    "href": "https://www.patreon.com/cw/u21094656",
+    "type": "patron"
+  }
+]
