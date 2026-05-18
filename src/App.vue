@@ -5,7 +5,12 @@
 </template>
 
 <script setup>
-// No need to import VPage here
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  const saved = localStorage.getItem('was-theme') || 'dark'
+  document.documentElement.setAttribute('data-theme', saved)
+})
 </script>
 
 <style scoped>

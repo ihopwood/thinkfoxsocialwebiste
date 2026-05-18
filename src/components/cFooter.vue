@@ -11,6 +11,7 @@
           <RouterLink to="/store">Store</RouterLink>
           <RouterLink to="/blog">Blog</RouterLink>
           <RouterLink to="/onwings">On Wings</RouterLink>
+          <RouterLink to="/aethercup">Aether Cup</RouterLink>
           <RouterLink to="/companyofash">Company of Ash</RouterLink>
         </nav>
       </div>

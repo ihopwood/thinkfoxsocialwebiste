@@ -427,3 +427,224 @@ section {
   }
 }
 
+/* ============================================================
+   THEME TOGGLE BUTTON (in header)
+   ============================================================ */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid rgba(122, 169, 216, 0.68);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--was-text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover,
+.theme-toggle:focus {
+  color: var(--was-paper);
+  border-color: rgba(212, 135, 95, 1);
+  background: rgba(212, 135, 95, 0.27);
+  outline: none;
+}
+
+/* ============================================================
+   LIGHT MODE
+   Applied via data-theme="light" on <html>
+   ============================================================ */
+[data-theme="light"] {
+  --was-sky: #1f5fa0;
+  --was-sky-deep: #144280;
+  --was-fox: #c06b42;
+  --was-gold: #8a6208;
+  --was-cream: #1e3048;
+  --was-paper: #0d1a2a;
+  --was-text: #0d1a2a;
+  --was-text-muted: #44607a;
+  --was-panel: rgba(255, 252, 248, 0.88);
+  --was-panel-strong: rgba(255, 255, 255, 0.96);
+  --was-border: rgba(28, 84, 148, 0.2);
+  --bs-body-bg: #f0ece4;
+  --bs-body-color: #0d1a2a;
+  --bs-link-color: #1f5fa0;
+  --bs-link-hover-color: #0d1a2a;
+}
+
+[data-theme="light"] html,
+[data-theme="light"] body {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(192, 107, 66, 0.12), transparent 34%),
+    radial-gradient(circle at 84% 12%, rgba(31, 95, 160, 0.08), transparent 40%),
+    radial-gradient(circle at 53% 86%, rgba(180, 140, 60, 0.06), transparent 36%),
+    linear-gradient(180deg, #f5f0e8 0%, #ede8df 42%, #e6e0d6 100%);
+  color: #0d1a2a !important;
+}
+
+[data-theme="light"] body::before {
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.055) 1px, transparent 1px);
+  opacity: 0.22;
+}
+
+/* Navbar */
+[data-theme="light"] .app-nav {
+  background: rgba(242, 237, 228, 0.94) !important;
+  border-bottom: 1px solid rgba(28, 84, 148, 0.16) !important;
+}
+
+[data-theme="light"] .navbar-toggler {
+  border-color: rgba(28, 84, 148, 0.35);
+}
+
+[data-theme="light"] .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(13,26,42,0.75)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+[data-theme="light"] .nav-pill {
+  border-color: rgba(28, 84, 148, 0.36) !important;
+  color: #0d1a2a !important;
+}
+
+[data-theme="light"] .nav-pill:hover,
+[data-theme="light"] .nav-pill:focus {
+  border-color: #c06b42 !important;
+  background: rgba(192, 107, 66, 0.1) !important;
+  color: #0d1a2a !important;
+  box-shadow: none !important;
+}
+
+[data-theme="light"] .social-pill {
+  border-color: rgba(28, 84, 148, 0.38) !important;
+  color: #44607a !important;
+}
+
+[data-theme="light"] .social-pill:hover,
+[data-theme="light"] .social-pill:focus {
+  border-color: #c06b42 !important;
+  background: rgba(192, 107, 66, 0.1) !important;
+  color: #0d1a2a !important;
+}
+
+[data-theme="light"] .theme-toggle {
+  border-color: rgba(28, 84, 148, 0.38) !important;
+  color: #44607a !important;
+}
+
+[data-theme="light"] .theme-toggle:hover,
+[data-theme="light"] .theme-toggle:focus {
+  border-color: #c06b42 !important;
+  background: rgba(192, 107, 66, 0.1) !important;
+  color: #0d1a2a !important;
+}
+
+/* About + Featured Game panels */
+[data-theme="light"] .c-about .section-panel,
+[data-theme="light"] .featured-game .section-panel {
+  background: rgba(255, 252, 248, 0.9) !important;
+  border-color: rgba(28, 84, 148, 0.16) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.07) !important;
+}
+
+[data-theme="light"] .feature-block {
+  background: rgba(248, 245, 240, 0.92) !important;
+  border-color: rgba(28, 84, 148, 0.14) !important;
+}
+
+/* Product / Tool / Feature cards */
+[data-theme="light"] .product-card {
+  background: rgba(255, 252, 248, 0.92) !important;
+  border-color: rgba(28, 84, 148, 0.16) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .product-card:hover {
+  border-color: rgba(192, 107, 66, 0.5) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .product-footer {
+  border-top-color: rgba(28, 84, 148, 0.1) !important;
+}
+
+[data-theme="light"] .tool-card {
+  background: rgba(255, 252, 248, 0.92) !important;
+  border-color: rgba(28, 84, 148, 0.18) !important;
+}
+
+[data-theme="light"] .tool-card:hover {
+  border-color: rgba(192, 107, 66, 0.5) !important;
+}
+
+[data-theme="light"] .feature-item {
+  background: rgba(248, 245, 240, 0.9) !important;
+  border-color: rgba(28, 84, 148, 0.14) !important;
+}
+
+/* Blog */
+[data-theme="light"] .post-card {
+  background: rgba(255, 252, 248, 0.92) !important;
+  border-color: rgba(28, 84, 148, 0.16) !important;
+}
+
+[data-theme="light"] .post-card:hover {
+  border-color: rgba(192, 107, 66, 0.5) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .modal-overlay {
+  background: rgba(20, 40, 70, 0.6) !important;
+}
+
+[data-theme="light"] .modal-box {
+  background: rgba(250, 248, 244, 0.99) !important;
+  border-color: rgba(28, 84, 148, 0.22) !important;
+}
+
+[data-theme="light"] .modal-close {
+  color: #44607a !important;
+}
+
+[data-theme="light"] .modal-close:hover {
+  color: #0d1a2a !important;
+}
+
+[data-theme="light"] .read-more-btn {
+  border-color: rgba(31, 95, 160, 0.35) !important;
+}
+
+/* Filter buttons */
+[data-theme="light"] .filter-btn {
+  border-color: rgba(28, 84, 148, 0.3) !important;
+  color: #44607a !important;
+}
+
+[data-theme="light"] .filter-btn:hover {
+  border-color: #c06b42 !important;
+  color: #c06b42 !important;
+}
+
+[data-theme="light"] .filter-btn.active {
+  background: rgba(192, 107, 66, 0.1) !important;
+  border-color: #c06b42 !important;
+  color: #c06b42 !important;
+}
+
+/* Store game section divider */
+[data-theme="light"] .game-section-head {
+  border-bottom-color: rgba(28, 84, 148, 0.14) !important;
+}
+
+/* Footer */
+[data-theme="light"] .footer {
+  background: linear-gradient(180deg, rgba(228, 222, 210, 0.98), rgba(216, 208, 194, 0.99)) !important;
+  border-top-color: rgba(28, 84, 148, 0.16) !important;
+}
+

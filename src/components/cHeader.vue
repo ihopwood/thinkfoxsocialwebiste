@@ -13,8 +13,12 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav align-items-lg-center gap-lg-2 mb-3 mb-lg-0 ms-lg-3">
           <li class="nav-item">
+            <RouterLink class="nav-link nav-pill" to="/blog">Blog</RouterLink>
+          </li>
+          <li class="nav-item">
             <a class="nav-link nav-pill" href="/#About">About</a>
           </li>
+
           <li v-for="game in games" :key="game.id" class="nav-item">
             <a class="nav-link nav-pill" :href="`/#${game.anchorId || game.id}`">
               {{ game.navLabel || game.title }}
@@ -23,9 +27,7 @@
           <li class="nav-item">
             <RouterLink class="nav-link nav-pill" to="/store">Store</RouterLink>
           </li>
-          <li class="nav-item">
-            <RouterLink class="nav-link nav-pill" to="/blog">Blog</RouterLink>
-          </li>
+
         </ul>
 
         <div class="ms-lg-auto d-flex flex-wrap gap-2 align-items-center social-wrap">
@@ -33,6 +35,10 @@
             :class="['social-pill', { 'patron-pill': s.type === 'patron' }]" :aria-label="'Think Fox on ' + s.label">
             <i :class="s.icon"></i>
           </a>
+          <button class="theme-toggle" @click="toggleTheme"
+            :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
+            <i :class="isDark ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
+          </button>
         </div>
       </div>
     </div>
@@ -52,8 +58,20 @@ export default {
   data() {
     return {
       games,
-      socials: socialsData.filter(s => s.href)
+      socials: socialsData.filter(s => s.href),
+      isDark: true
     };
+  },
+  mounted() {
+    this.isDark = (document.documentElement.getAttribute('data-theme') || 'dark') === 'dark';
+  },
+  methods: {
+    toggleTheme() {
+      this.isDark = !this.isDark;
+      const theme = this.isDark ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('was-theme', theme);
+    }
   }
 }
 </script>

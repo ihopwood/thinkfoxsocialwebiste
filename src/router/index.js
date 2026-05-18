@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import vOnWingDetail from '@/View/vOnWingDetail.vue'
+import vAetherCupDetail from '@/View/vAetherCupDetail.vue'
 import vCompanyOfAshDetail from '@/View/vCompanyOfAshDetail.vue'
 import vStore from '@/View/vStore.vue'
 import vBlog from '@/View/vBlog.vue'
@@ -17,6 +18,11 @@ const router = createRouter({
       path: '/onwings',
       name: 'onwings',
       component: vOnWingDetail,
+    },
+    {
+      path: '/aethercup',
+      name: 'aethercup',
+      component: vAetherCupDetail,
     },
     {
       path: '/companyofash',
