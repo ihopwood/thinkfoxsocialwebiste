@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import vOnWingDetail from '@/View/vOnWingDetail.vue'
 import vCompanyOfAshDetail from '@/View/vCompanyOfAshDetail.vue'
+import vStore from '@/View/vStore.vue'
+import vBlog from '@/View/vBlog.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,8 +23,23 @@ const router = createRouter({
       name: 'companyofash',
       component: vCompanyOfAshDetail,
     },
-
+    {
+      path: '/store',
+      name: 'store',
+      component: vStore,
+    },
+    {
+      path: '/blog',
+      name: 'blog',
+      component: vBlog,
+    },
   ],
+  scrollBehavior(to) {
+    if (to.hash) {
+      return { el: to.hash, behavior: 'smooth', top: 88 }
+    }
+    return { top: 0 }
+  }
 })
 
 export default router
