@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoA Combat Calculator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#1a1a1e;color:#e0e0e0;padding:.75rem;font-size:13px}
+h1{font-size:16px;font-weight:500;margin-bottom:.5rem;color:#f0f0f0}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:.75rem}
+.tab{flex:1;padding:8px;font-size:13px;font-weight:500;border:1.5px solid #3a3a42;border-radius:8px;cursor:pointer;background:#1a1a1e;color:#888;text-align:center}
+.tab.active{background:#1a3a5c;color:#7ab8f5;border-color:#2a6aac}
+
+.panel{display:none}.panel.active{display:block}
+
+.card{background:#242428;border:0.5px solid #3a3a42;border-radius:10px;padding:.875rem 1rem;margin-bottom:10px}
+.slabel{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:#666;margin-bottom:6px}
+select,input[type=number]{font-family:inherit;font-size:13px;padding:5px 7px;border:0.5px solid #444;border-radius:6px;background:#1a1a1e;color:#e0e0e0}
+.row{display:flex;align-items:center;gap:8px;margin-top:7px}
+.row label{font-size:12px;color:#999;min-width:90px}
+.tog-group{display:flex;gap:4px;flex-wrap:wrap}
+.tog{font-size:11px;padding:3px 8px;border:1.5px solid #444;border-radius:6px;cursor:pointer;background:#1a1a1e;color:#888}
+[data-group="range"] .tog.active{background:#1a3a5c;color:#7ab8f5;border-color:#2a6aac;font-weight:500}
+[data-group="mode"] .tog.active{background:#3a2a00;color:#f5c842;border-color:#7a5500;font-weight:500}
+[data-group="cover"] .tog.active,[data-group="mcover"] .tog.active{background:#0f2e1a;color:#6ecf8e;border-color:#1a6e3a;font-weight:500}
+[data-group="facing"] .tog[data-val="front"].active,[data-group="mfacing"] .tog[data-val="front"].active{background:#1a3a5c;color:#7ab8f5;border-color:#2a6aac;font-weight:500}
+[data-group="facing"] .tog[data-val="side"].active,[data-group="facing"] .tog[data-val="rear"].active,
+[data-group="mfacing"] .tog[data-val="side"].active,[data-group="mfacing"] .tog[data-val="rear"].active{background:#3a1010;color:#f57878;border-color:#7a2020;font-weight:500}
+/* Melee toggle groups */
+[data-group^="range_"] .tog.active{background:#1a3a5c;color:#7ab8f5;border-color:#2a6aac;font-weight:500}
+[data-group="attSkill"] .tog.active,[data-group="defSkill"] .tog.active{background:#1a3a5c;color:#7ab8f5;border-color:#2a6aac;font-weight:500}
+[data-group="attWpn"] .tog.active{background:#3a2a00;color:#f5c842;border-color:#7a5500;font-weight:500}
+[data-group="attWpn"] .tog[data-val="at"].active{background:#2a1a3a;color:#c47af5;border-color:#6a2aac;font-weight:500}
+[data-group="attWpn"] .tog[data-val="iat"].active{background:#3a1010;color:#f57878;border-color:#7a2020;font-weight:500}
+[data-group="defType"] .tog[data-val="infantry"].active{background:#0f2e1a;color:#6ecf8e;border-color:#1a6e3a;font-weight:500}
+[data-group="defType"] .tog[data-val="armor"].active{background:#3a2a00;color:#f5c842;border-color:#7a5500;font-weight:500}
+[data-group="defType"] .tog[data-val="mecha"].active{background:#3a1010;color:#f57878;border-color:#7a2020;font-weight:500}
+.btn{padding:9px;font-size:14px;font-weight:500;background:#1a1a1e;border:0.5px solid #555;border-radius:9px;cursor:pointer;color:#e0e0e0;width:100%;margin-top:8px}
+.btn:active{transform:scale(.98)}
+.btn.appd{border-color:#7a5500;color:#f5c842}
+.btn.melee-roll{border-color:#2a6aac;color:#7ab8f5}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.metric{background:#1a1a1e;border-radius:7px;padding:8px 10px}
+.metric .v{font-size:20px;font-weight:500;color:#e0e0e0}
+.metric .v.r{color:#f57878}.metric .v.a{color:#f5c842}.metric .v.g{color:#6ecf8e}.metric .v.b{color:#7ab8f5}
+.metric .l{font-size:10px;color:#666;margin-top:1px}
+.log{margin-top:8px;background:#111114;border-radius:7px;padding:8px;font-size:11px;color:#888;line-height:1.85;max-height:240px;overflow-y:auto;font-family:monospace}
+.hit{color:#f57878}.miss{color:#555}.appc{color:#f5c842}.inf2{color:#888}.crit{color:#f5a623}.good{color:#6ecf8e}
+.divider{height:0.5px;background:#333;margin:8px 0}
+.winfo{font-size:11px;color:#888;margin-top:4px;line-height:1.5}
+.nores{color:#555;font-size:12px;text-align:center;padding:1.5rem}
+.atrack{display:flex;gap:5px;margin-top:7px;align-items:center;flex-wrap:wrap}
+.apip{width:28px;height:28px;border-radius:50%;border:1.5px solid #444;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;background:#1a1a1e;color:#666}
+.apip.hit{background:#3a1010;color:#f57878;border-color:#7a2020}
+.effdef{font-size:12px;font-weight:500;color:#f5c842;margin-top:5px}
+.squad-slot{background:#1e1e24;border:0.5px solid #333;border-radius:8px;padding:.75rem;margin-bottom:8px}
+.slot-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.slot-title{font-size:11px;font-weight:500;color:#7ab8f5;text-transform:uppercase;letter-spacing:.07em}
+.remove-slot{font-size:18px;line-height:1;background:none;border:none;color:#555;cursor:pointer;padding:0 4px}
+.remove-slot:hover{color:#f57878}
+.add-slot-btn{width:100%;padding:6px;font-size:12px;background:none;border:1px dashed #3a3a42;border-radius:7px;color:#555;cursor:pointer;margin-top:4px}
+.add-slot-btn:hover{border-color:#7ab8f5;color:#7ab8f5}
+.slot-row{display:flex;gap:6px;align-items:center;margin-bottom:5px}
+.slot-row label{font-size:11px;color:#888;min-width:52px}
+.slot-row select{flex:1;font-size:12px}
+.slot-row input{width:50px;font-size:12px}
+.slot-winfo{font-size:10px;color:#666;margin-top:3px;line-height:1.5}
+.crit-box{background:#2a1f00;border:0.5px solid #7a5500;border-radius:7px;padding:8px 10px;margin-top:6px;font-size:12px;color:#f5c842;line-height:1.7}
+.crit-box .crit-title{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:#f5a623;margin-bottom:3px}
+.crit-box.catastrophic{background:#3a0a0a;border-color:#9a2020;color:#f57878}
+.crit-box.catastrophic .crit-title{color:#f57878}
+</style>
+</head>
+<body>
+<h1>Company of Ash — Combat Calculator</h1>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('ranged',this)">Ranged fire</div>
+  <div class="tab" onclick="switchTab('melee',this)">Melee</div>
+  <div class="tab" onclick="showHelp()" style="max-width:40px;flex:none;color:#666">?</div>
+</div>
+
+<!-- Help modal -->
+<div id="helpModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;overflow-y:auto;padding:1rem">
+  <div style="background:#242428;border:0.5px solid #3a3a42;border-radius:12px;max-width:560px;margin:2rem auto;padding:1.5rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+      <span style="font-size:15px;font-weight:500;color:#f0f0f0">Company of Ash — Calculator guide</span>
+      <button onclick="hideHelp()" style="background:none;border:none;color:#888;font-size:20px;cursor:pointer">×</button>
+    </div>
+    <div style="font-size:12px;color:#aaa;line-height:1.8">
+      <div style="color:#7ab8f5;font-weight:500;margin-bottom:4px">RANGED FIRE TAB</div>
+      <p>Build your attacking squad using up to 3 unit slots. Each slot has its own faction, unit type, weapon, model count, and <b>range toggle</b> — set Optimum (+1 Fortune), Normal, or Long (−1) per weapon based on the distance you measured at the table. Weapon range bands are shown in the slot info line.</p>
+      <p style="margin-top:6px">Set the <b>target</b> and its cover state. <b>Cover 1</b> is light cover (−1 Fortune). <b>Cover 2</b> is heavy cover or scouts in any cover (−2 Fortune). If the target is infantry and the defending player chooses to <b>Go to Ground</b>, select it before rolling — the first attack resolves at the current cover level, all subsequent attacks treat the unit as Cover 1 minimum. Go to Ground adds 1 suppression to the target.</p>
+      <p style="margin-top:6px"><b>ERA</b> appears on ERA-equipped vehicles. When a hit is scored the calculator rolls automatically — 4+ negates the hit and all crits. ERA is one use only; uncheck the box after it fires.</p>
+      <p style="margin-top:6px"><b>TOUGH units:</b> infantry-class weapons can still affect Tough units but only if the Fortune die rolled a natural 6 or higher. The calculator flags this in the log.</p>
+      <p style="margin-top:6px"><b>What this tool does not handle (resolve manually):</b> MaDDs intercept (5+ on D6, roll before using calculator), Guided weapon rerolls (your choice at the table), Power shields (5+ save per hit after calculator resolves), ERA expiry tracking across turns.</p>
+      <div style="color:#7ab8f5;font-weight:500;margin:10px 0 4px">MELEE TAB</div>
+      <p>Enter stats directly — skill die, models, attacks per model, weapon type, suppression, and keywords. No unit database lookup needed. Works for any unit including wolves and mercenaries not yet in the ranged database.</p>
+      <p style="margin-top:6px">Suppression removes models from the attack pool (suppressed models still take casualties). 2+ suppression = −1 Fortune on all melee rolls. 4 = Pinned (all models suppressed from attacking, still valid casualties).</p>
+      <p style="margin-top:6px"><b>APPD</b> (Cloud Runner close defense vs charging infantry): flip attacker and defender, set Overwatch mode, enter D4 skill / 1 attack per model / 3 models / standard weapon type. Resolve as a ranged attack in the Ranged tab before committing to the melee tab.</p>
+      <div style="color:#7ab8f5;font-weight:500;margin:10px 0 4px">CRITICAL HITS</div>
+      <p>Critical results display automatically when vehicles take damage. Check off triggered effects on your printed army sheet. Sensor damage stacks — multiple hits can render a vehicle combat-ineffective. Catastrophic = vehicle destroyed immediately.</p>
+    </div>
+    <button onclick="hideHelp()" style="margin-top:1rem;width:100%;padding:8px;background:#1a3a5c;color:#7ab8f5;border:0.5px solid #2a6aac;border-radius:8px;cursor:pointer;font-size:13px">Got it</button>
+  </div>
+</div>
+
+<!-- ═══════════════ RANGED PANEL ═══════════════ -->
+<div class="panel active" id="panel-ranged">
+
+<div class="card">
+  <div class="slabel">Attacking squad</div>
+  <div id="rSlotContainer"></div>
+  <button class="add-slot-btn" onclick="addSlot('r')">+ Add unit type to squad</button>
+  <div class="divider"></div>
+  <div class="row"><label>Range</label>
+    <div class="tog-group" data-group="range">
+      <button class="tog active" data-group="range" data-val="optimum" onclick="setTog(this)">Optimum +1</button>
+      <button class="tog" data-group="range" data-val="normal" onclick="setTog(this)">Normal</button>
+      <button class="tog" data-group="range" data-val="long" onclick="setTog(this)">Long −1</button>
+    </div>
+  </div>
+  <div class="row"><label>Mode</label>
+    <div class="tog-group" data-group="mode">
+      <button class="tog active" data-group="mode" data-val="normal" onclick="setTog(this)">Normal</button>
+      <button class="tog" data-group="mode" data-val="overwatch" onclick="setTog(this)">Overwatch −1</button>
+      <button class="tog" data-group="mode" data-val="splitfire" onclick="setTog(this)">Split fire −1</button>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="slabel">Target</div>
+  <div style="display:flex;gap:8px;margin-bottom:6px">
+    <select id="rDefFaction" onchange="buildDefList('r')" style="flex:1"></select>
+    <select id="rDefUnit" onchange="defUnitChanged('r')" style="flex:2"></select>
+  </div>
+  <div id="rDefStats" class="winfo"></div>
+  <div class="divider"></div>
+  <div class="row"><label>Cover</label>
+    <div class="tog-group" data-group="cover">
+      <button class="tog active" data-group="cover" data-val="none" onclick="setTog(this)">None</button>
+      <button class="tog" data-group="cover" data-val="cover1" onclick="setTog(this)">Cover 1 −1</button>
+      <button class="tog" data-group="cover" data-val="cover2" onclick="setTog(this)">Cover 2 −2</button>
+    </div>
+  </div>
+  <div class="row" id="gtgRow" style="display:none">
+    <label>Go to ground</label>
+    <div class="tog-group" data-group="gtg">
+      <button class="tog active" data-group="gtg" data-val="no" onclick="setTog(this)">No</button>
+      <button class="tog" data-group="gtg" data-val="yes" onclick="setTog(this)">Yes — first hit open, rest Cover 1</button>
+    </div>
+  </div>
+  <div class="row"><label>Facing</label>
+    <div class="tog-group" data-group="facing">
+      <button class="tog active" data-group="facing" data-val="front" onclick="setTog(this)">Front</button>
+      <button class="tog" data-group="facing" data-val="side" onclick="setTog(this)">Side −1</button>
+      <button class="tog" data-group="facing" data-val="rear" onclick="setTog(this)">Rear −2</button>
+    </div>
+  </div>
+  <div id="rArmorSec" style="display:none">
+    <div class="divider"></div>
+    <div class="slabel" style="margin-bottom:2px">Armor critical damage</div>
+    <div class="atrack" id="rAtrack"></div>
+    <div id="rEffdef" class="effdef"></div>
+  </div>
+  <div class="divider"></div>
+  <div class="row"><label>Existing sup</label>
+    <input type="number" id="rExistingSup" min="0" max="4" value="0" style="width:52px">
+  </div>
+  <div id="eraRow" style="display:none">
+    <div class="divider"></div>
+    <div class="row"><label style="color:#f5c842">ERA</label>
+      <label style="font-size:12px;color:#aaa;display:flex;align-items:center;gap:5px">
+        <input type="checkbox" id="eraActive" checked> Active — 4+ negates hit + crits (one use, uncheck after firing)
+      </label>
+    </div>
+  </div>
+  <div id="toughRow" style="display:none">
+    <div style="font-size:11px;color:#f57878;padding:4px 0;margin-top:4px">⚠ TOUGH — Infantry weapons need Fortune 6+ to cause damage</div>
+  </div>
+</div>
+
+<button class="btn" onclick="rollRanged()">Roll ranged attack</button>
+<div id="rResults"><div class="nores">Configure squad and target, then roll.</div></div>
+</div>
+
+<!-- ═══════════════ MELEE PANEL ═══════════════ -->
+<div class="panel" id="panel-melee">
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
+
+<!-- ATTACKER -->
+<div class="card" style="margin-bottom:0">
+  <div class="slabel" style="color:#7ab8f5">Attacker</div>
+  <div class="row"><label>Skill die</label>
+    <div class="tog-group" data-group="attSkill">
+      <button class="tog" data-group="attSkill" data-val="4" onclick="setMTog(this)">D4</button>
+      <button class="tog active" data-group="attSkill" data-val="6" onclick="setMTog(this)">D6</button>
+      <button class="tog" data-group="attSkill" data-val="8" onclick="setMTog(this)">D8</button>
+      <button class="tog" data-group="attSkill" data-val="10" onclick="setMTog(this)">D10</button>
+    </div>
+  </div>
+  <div class="row"><label>Models</label>
+    <input type="number" id="attModels" min="1" max="12" value="4" style="width:55px">
+  </div>
+  <div class="row"><label>Attacks/model</label>
+    <input type="number" id="attApM" min="1" max="8" value="1" style="width:55px">
+  </div>
+  <div class="row"><label>Weapon</label>
+    <div class="tog-group" data-group="attWpn">
+      <button class="tog active" data-group="attWpn" data-val="standard" onclick="setMTog(this)">Standard</button>
+      <button class="tog" data-group="attWpn" data-val="at" onclick="setMTog(this)">AT melee</button>
+      <button class="tog" data-group="attWpn" data-val="iat" onclick="setMTog(this)">IAT</button>
+    </div>
+  </div>
+  <div class="row"><label>Suppression</label>
+    <input type="number" id="attSup" min="0" max="4" value="0" style="width:55px">
+    <span style="font-size:10px;color:#666">4=Pinned</span>
+  </div>
+  <div class="divider"></div>
+  <div class="slabel" style="margin-bottom:6px">Keywords</div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <label style="font-size:12px;color:#aaa;display:flex;align-items:center;gap:5px"><input type="checkbox" id="attApex"> Apex</label>
+    <label style="font-size:12px;color:#aaa;display:flex;align-items:center;gap:5px"><input type="checkbox" id="attFeral"> Feral +1</label>
+    <label style="font-size:12px;color:#aaa;display:flex;align-items:center;gap:5px"><input type="checkbox" id="attTough"> Tough</label>
+  </div>
+</div>
+
+<!-- DEFENDER -->
+<div class="card" style="margin-bottom:0">
+  <div class="slabel" style="color:#f57878">Defender</div>
+  <div class="row"><label>Skill die</label>
+    <div class="tog-group" data-group="defSkill">
+      <button class="tog" data-group="defSkill" data-val="4" onclick="setMTog(this)">D4</button>
+      <button class="tog active" data-group="defSkill" data-val="6" onclick="setMTog(this)">D6</button>
+      <button class="tog" data-group="defSkill" data-val="8" onclick="setMTog(this)">D8</button>
+      <button class="tog" data-group="defSkill" data-val="10" onclick="setMTog(this)">D10</button>
+    </div>
+  </div>
+  <div class="row"><label>Models</label>
+    <input type="number" id="defModels" min="1" max="12" value="3" style="width:55px">
+  </div>
+  <div class="row"><label>Attacks/model</label>
+    <input type="number" id="defApM" min="1" max="8" value="1" style="width:55px">
+  </div>
+  <div class="row"><label>Target type</label>
+    <div class="tog-group" data-group="defType">
+      <button class="tog active" data-group="defType" data-val="infantry" onclick="setMTog(this);toggleStructRow()">Infantry</button>
+      <button class="tog" data-group="defType" data-val="armor" onclick="setMTog(this);toggleStructRow()">Armor</button>
+      <button class="tog" data-group="defType" data-val="mecha" onclick="setMTog(this);toggleStructRow()">Mecha</button>
+    </div>
+  </div>
+  <div class="row" id="defStructRow" style="display:none"><label>Structure HP</label>
+    <input type="number" id="defStruct" min="1" max="12" value="6" style="width:55px">
+  </div>
+  <div class="row"><label>Suppression</label>
+    <input type="number" id="defSup" min="0" max="4" value="0" style="width:55px">
+    <span style="font-size:10px;color:#666">4=Pinned</span>
+  </div>
+  <div class="divider"></div>
+  <div class="slabel" style="margin-bottom:6px">Keywords</div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <label style="font-size:12px;color:#aaa;display:flex;align-items:center;gap:5px"><input type="checkbox" id="defApex"> Apex</label>
+    <label style="font-size:12px;color:#aaa;display:flex;align-items:center;gap:5px"><input type="checkbox" id="defFeral"> Feral +1</label>
+    <label style="font-size:12px;color:#aaa;display:flex;align-items:center;gap:5px"><input type="checkbox" id="defTough"> Tough</label>
+  </div>
+</div>
+
+</div>
+
+<!-- Armor crit track -->
+<div id="mVehicleSec" class="card" style="display:none;margin-bottom:10px">
+  <div class="slabel" style="margin-bottom:2px">Defender armor critical damage</div>
+  <div class="atrack" id="mAtrack2"></div>
+  <div id="mEffdef2" class="effdef"></div>
+</div>
+
+<button class="btn melee-roll" onclick="rollMelee()">Resolve melee</button>
+<div id="mResults"><div class="nores">Configure attacker and defender, then resolve.</div></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════
+const UNITS={
+  // Sol Union infantry (avail:null = squad composition only)
+  "Combat infantry":                {f:"SU",role:"Infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["RCM","melee blades","improvised AT melee"],kw:"Infantry",pts:14,avail:null,exposed:[],protected:[],main:null},
+  "WC LMG drone":                   {f:"SU",role:"Infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["ARQ LMG","melee blades"],kw:"Infantry",pts:15,avail:null,exposed:[],protected:[],main:null},
+  "combat scout":                   {f:"SU",role:"Infantry",skill:"D8",move:5,melee:1,def:7,struct:null,w:["RCM","melee blades","improvised AT melee"],kw:"infantry, scout",pts:21,avail:null,exposed:[],protected:[],main:null},
+  "Combat Engineer":                {f:"SU",role:"Infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["SCM","Antitank melee"],kw:"infantry, ECM, Demolitions",pts:18,avail:null,exposed:[],protected:[],main:null},
+  "Drone operator":                 {f:"SU",role:"Infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["FPD 2","melee blades","SCM"],kw:"infantry",pts:17,avail:null,exposed:[],protected:[],main:null},
+  "FPD carrier Drone":              {f:"SU",role:"Infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["melee blades"],kw:"infantry, drone carrier",pts:10,avail:null,exposed:[],protected:[],main:null},
+  "Urban Tactical engagement armor":{f:"SU",role:"Power armor",skill:"D8",move:4,melee:1,def:8,struct:null,w:["ARQ LMG","CPD","anti tank melee"],kw:"Infantry, jump, Tough",pts:46,avail:null,exposed:[],protected:[],main:null},
+  "anti armor Gunner":              {f:"SU",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["AAR","Antitank melee"],kw:"Infantry",pts:16,avail:null,exposed:[],protected:[],main:null},
+  "Pack Leader":                    {f:"SU",role:"infantry",skill:"D6",move:8,melee:2,def:7,struct:null,w:["SCM","claws","anti tank melee"],kw:"Feral, leashed, Apex",pts:28,avail:null,exposed:[],protected:[],main:null},
+  "Leashed Hybrid":                 {f:"SU",role:"infantry",skill:"D6",move:8,melee:1,def:7,struct:null,w:["SCM","claws","anti tank melee"],kw:"feral, leashed",pts:25,avail:null,exposed:[],protected:[],main:null},
+  "Leashed Hybrid gunner":          {f:"SU",role:"infantry",skill:"D6",move:8,melee:1,def:7,struct:null,w:["shotgun","claws","anti tank melee"],kw:"feral, leashed",pts:23,avail:null,exposed:[],protected:[],main:null},
+  // Sol Union vehicles
+  "Bull Duck":      {f:"SU",role:"light armor",skill:"D6",move:8,melee:2,def:9,struct:4,w:["GMP 60"],kw:"amphibious, Transport 8",pts:47,appd:false,exposed:["GMP 60"],protected:[],main:null},
+  "Hoplite":        {f:"SU",role:"light armor",skill:"D6",move:8,melee:3,def:9,struct:4,w:["MTG 75","ARQ LMG"],kw:"ERA",pts:60,appd:false,exposed:["ARQ LMG"],protected:[],main:"MTG 75"},
+  "Spartan":        {f:"SU",role:"light armor",skill:"D6",move:8,melee:3,def:9,struct:4,w:["MAW","GOAT 100"],kw:"ERA, Scout",pts:57,appd:false,exposed:["GOAT 100"],protected:[],main:"MAW"},
+  "Cataphract":     {f:"SU",role:"heavy armor",skill:"D6",move:6,melee:4,def:11,struct:10,w:["MMTGx","MTG 75","GMP 60"],kw:"MaDDs, ERA, Stable turret",pts:94,appd:false,exposed:["GMP 60"],protected:["MTG 75"],main:"MMTGx"},
+  "MACS":           {f:"SU",role:"mecha",skill:"D6",move:6,melee:5,def:9,struct:6,w:["MTG 75","GOAT 100","MTG 75"],kw:"MaDDs",pts:81,appd:false,exposed:["GOAT 100"],protected:["MTG 75","MTG 75"],main:null},
+  "MACS Suppressor":{f:"SU",role:"mecha",skill:"D6",move:6,melee:5,def:9,struct:6,w:["MAW","GOAT 100","MAW"],kw:"MaDDs",pts:73,appd:false,exposed:["GOAT 100"],protected:["MAW","MAW"],main:null},
+  "Truck":          {f:"SU",role:"light armor",skill:"D6",move:7,melee:2,def:7,struct:2,w:[],kw:"Transport 4",pts:32,appd:false,exposed:[],protected:[],main:null},
+  "Truck Armed":    {f:"SU",role:"light armor",skill:"D6",move:7,melee:2,def:7,struct:2,w:["ARQ LMG"],kw:"Transport 4",pts:37,appd:false,exposed:["ARQ LMG"],protected:[],main:null},
+  // Eastern Coalition infantry
+  "Jade Warrior smg":   {f:"EC",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["QRAs","melee blades","improvised AT melee"],kw:"Infantry",pts:14,avail:null,exposed:[],protected:[],main:null},
+  "Jade Warrior Rifle": {f:"EC",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["QQSr","melee blades","improvised AT melee"],kw:"Infantry",pts:14,avail:null,exposed:[],protected:[],main:null},
+  "Jade Gunner":        {f:"EC",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["QxLMG","melee blades","improvised AT melee"],kw:"infantry",pts:17,avail:null,exposed:[],protected:[],main:null},
+  "Jade scouts":        {f:"EC",role:"infantry",skill:"D6",move:6,melee:1,def:6,struct:null,w:["QRAs","melee blades","anti tank melee"],kw:"infantry, Scout",pts:20,avail:null,exposed:[],protected:[],main:null},
+  "Jade Drone operator":{f:"EC",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["QRAS","melee blades","improvised AT melee"],kw:"Infantry, Drone",pts:14,avail:null,exposed:[],protected:[],main:null},
+  "Jade Signal":        {f:"EC",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["QRAS","melee blades","improvised AT melee"],kw:"Infantry, ECM",pts:20,avail:null,exposed:[],protected:[],main:null},
+  "Jade Fist":          {f:"EC",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["QRAs","FIST","anti tank melee"],kw:"infantry",pts:22,avail:null,exposed:[],protected:[],main:null},
+  "Guardian frame":     {f:"EC",role:"infantry",skill:"D8",move:6,melee:1,def:8,struct:null,w:["QxLMG","QRAs","anti tank melee"],kw:"infantry, scout",pts:31,avail:null,exposed:[],protected:[],main:null},
+  // Eastern Coalition vehicles
+  "Hover Bee":              {f:"EC",role:"light armor",skill:"D6",move:10,melee:2,def:8,struct:6,w:["QxLMG"],kw:"Transport 6, hover",pts:55,appd:false,exposed:[],protected:["QxLMG"],main:null},
+  "cloud runner gun":       {f:"EC",role:"light armor",skill:"D6",move:12,melee:2,def:7,struct:4,w:["QxLMG"],kw:"scout",pts:48,appd:true,exposed:["QxLMG"],protected:[],main:null},
+  "cloud runner FIST":      {f:"EC",role:"light armor",skill:"D6",move:12,melee:2,def:7,struct:4,w:["FIST"],kw:"scout",pts:49,appd:true,exposed:["FIST"],protected:[],main:null},
+  "cloud runner Transport": {f:"EC",role:"light armor",skill:"D6",move:12,melee:2,def:7,struct:4,w:["APPDs"],kw:"scout, Transport 4",pts:43,appd:true,exposed:[],protected:[],main:null},
+  "iron cliff MBT":         {f:"EC",role:"heavy armor",skill:"D6",move:6,melee:3,def:10,struct:8,w:["lun ton","QxLMG"],kw:"turret, MaDDs",pts:74,appd:false,exposed:["QxLMG"],protected:[],main:"lun ton"},
+  "Land Crab":              {f:"EC",role:"mecha",skill:"D6",move:8,melee:6,def:10,struct:6,w:["plasma hammer","QxLMG"],kw:"",pts:65,appd:false,exposed:["QxLMG"],protected:[],main:"plasma hammer"},
+  "celestial sword":        {f:"EC",role:"mecha",skill:"D8",move:9,melee:6,def:9,struct:8,w:["plasma lance","Qmax"],kw:"MaDDs, shield",pts:87,appd:false,exposed:["Qmax"],protected:[],main:"plasma lance"}
+};
+
+const WEAPONS={
+  "AAR":                {dmg:"D8", rof:1,range:'36"',opt:'24–30"',long:'42"', rules:["Anti-material","Smoke 2"]},
+  "ARQ LMG":            {dmg:"D4", rof:3,range:'36"',opt:'12–18"',long:'42"', rules:["Infantry"]},
+  "anti tank melee":    {dmg:"melee",rof:1,range:"melee",opt:null,long:null,       rules:["Melee","Anti-armor melee"]},
+  "Antitank melee":     {dmg:"melee",rof:1,range:"melee",opt:null,long:null,       rules:["Melee","Anti-armor melee"]},
+  "claws":              {dmg:"melee",rof:1,range:"melee",opt:null,long:null,       rules:["Melee","Anti-armor melee"]},
+  "melee blades":       {dmg:"melee",rof:1,range:"melee",opt:null,long:null,       rules:["Melee"]},
+  "improvised AT melee":{dmg:"melee",rof:1,range:"melee",opt:null,long:null,       rules:["Melee","IAT"]},
+  "FIST":               {dmg:"D10",rof:1,range:'48"',opt:'24–32"',long:null,  rules:["Guided","Blast 2"]},
+  "Fist":               {dmg:"D10",rof:1,range:'48"',opt:'24–32"',long:null,  rules:["Guided","Blast 2"]},
+  "FPD 2":              {dmg:"D8", rof:1,range:"drone",opt:null,long:null,         rules:["Drone","CFD","Blast 2"]},
+  "GMP 60":             {dmg:"D6", rof:1,range:'36"',opt:'30–36"',long:'56"', rules:["Blast 2","Smoke","Infantry"]},
+  "GOAT 100":           {dmg:"D12",rof:1,range:'48"',opt:'30–40"',long:null,  rules:["Guided","Blast 2"]},
+  "lun ton":            {dmg:"D8", rof:2,range:'54"',opt:'36–42"',long:'66"', rules:[]},
+  "MAW":                {dmg:"D6", rof:3,range:'40"',opt:'20–30"',long:'52"', rules:["Anti-material"]},
+  "MMTGx":              {dmg:"D20",rof:1,range:'36"',opt:'24–30"',long:'48"', rules:["Blast 4","Ignores cover","Brace"]},
+  "MTG 75":             {dmg:"D8", rof:2,range:'48"',opt:'28–34"',long:'60"', rules:["Blast 2"]},
+  "CPD":                {dmg:"D8", rof:1,range:'6"', opt:null,long:null,           rules:["Blast 4","Placed"]},
+  "plasma hammer":      {dmg:"D10",rof:1,range:'36"',opt:'24–30"',long:null,  rules:["Blast 4"]},
+  "plasma lance":       {dmg:"D8", rof:1,range:'36"',opt:'24–30"',long:null,  rules:["Blast 2"]},
+  "Qmax":               {dmg:"D6", rof:3,range:'38"',opt:'30–36"',long:'48"', rules:[]},
+  "QQSr":               {dmg:"D6", rof:1,range:'30"',opt:'20–26"',long:'40"', rules:["Infantry"]},
+  "QRAs":               {dmg:"D4", rof:3,range:'12"',opt:'4–10"', long:null,  rules:["Infantry"]},
+  "QRAS":               {dmg:"D4", rof:3,range:'12"',opt:'4–10"', long:null,  rules:["Infantry"]},
+  "QxLMG":              {dmg:"D4", rof:3,range:'34"',opt:'24–30"',long:'48"', rules:[]},
+  "RCM":                {dmg:"D4", rof:2,range:'24"',opt:'8–14"', long:'30"', rules:["Infantry"]},
+  "SCM":                {dmg:"D4", rof:3,range:'18"',opt:'6–10"', long:null,  rules:["Infantry"]},
+  "shotgun":            {dmg:"D4", rof:1,range:'12"',opt:null,long:null,           rules:["Blast 2"]},
+  "APPDs":              {dmg:"D4", rof:3,range:"contact",opt:null,long:null,       rules:["APPD"]},
+};
+
+const CRIT_TABLE=[
+  // DAM 1: fort 1-8
+  [null,null,"SEC_A","MOB_HALF","SEC_B","SENSOR","MOB_HALF","ARMOR_1"],
+  // DAM 2
+  [null,"MAIN_DMG","MOB_HALF","SEC_A","ARMOR_1","SENSOR","ARMOR_2","IMMOBILIZED"],
+  // DAM 3
+  ["CATASTROPHIC",null,"MAIN_DMG","MOB_HALF","SENSOR","ARMOR_2","IMMOBILIZED","CATASTROPHIC"]
+];
+
+function critLabel(code){
+  const map={
+    "SEC_A":"Secondary weapon A destroyed",
+    "SEC_B":"Secondary weapon B destroyed",
+    "MAIN_DMG":"Main weapon damaged (−1 die step)",
+    "MOB_HALF":"Mobility kill — half speed (permanent)",
+    "SENSOR":"Sensor damage (−1 Fortune die, stacks)",
+    "ARMOR_1":"Armor damage −1 to defense",
+    "ARMOR_2":"Armor damage −2 to defense",
+    "IMMOBILIZED":"Immobilized — zero movement (permanent)",
+    "CATASTROPHIC":"Catastrophic hit — vehicle destroyed"
+  };
+  return map[code]||code;
+}
+
+function resolveCrit(fortResult, damAmt, unitName){
+  const u=UNITS[unitName];
+  const row=Math.min(damAmt,3)-1;
+  const col=Math.min(Math.max(fortResult,1),8)-1;
+  const code=CRIT_TABLE[row][col];
+  if(!code)return null;
+
+  let detail=critLabel(code);
+
+  // Resolve which weapon is affected
+  if(code==="SEC_A"||code==="SEC_B"){
+    if(u){
+      const pool=code==="SEC_A"?u.exposed:u.protected;
+      if(pool&&pool.length>0){
+        const wpn=pool[Math.floor(Math.random()*pool.length)];
+        detail=(code==="SEC_A"?"Exposed weapon destroyed: ":"Protected weapon destroyed: ")+wpn;
+      } else {
+        detail=(code==="SEC_A"?"Exposed weapon hit":"Protected weapon hit")+" — no weapon in this slot, no effect";
+      }
+    }
+  }
+  if(code==="MAIN_DMG"){
+    if(u){
+      // MACS special: random across all weapons
+      if(unitName==="MACS"){
+        const all=u.w;
+        const wpn=all[Math.floor(Math.random()*all.length)];
+        detail="Weapon system damaged (−1 die step): "+wpn;
+      } else if(u.main){
+        detail="Main weapon damaged (−1 die step): "+u.main;
+      } else {
+        detail="Main weapon hit — no dedicated main weapon, no effect";
+      }
+    }
+  }
+  return {code,detail};
+}
+
+// ═══════════════════════════════════════════════════════════
+// SHARED STATE
+// ═══════════════════════════════════════════════════════════
+const S={range:"optimum",mode:"normal",cover:"none",facing:"front",mcover:"none",mfacing:"front"};
+let rArmDmg=0, mArmDmg=0;
+let slotCountR=0, slotCountM=0;
+
+const SU_NAMES=Object.keys(UNITS).filter(k=>UNITS[k].f==="SU");
+const EC_NAMES=Object.keys(UNITS).filter(k=>UNITS[k].f==="EC");
+const FAC_NAMES={"SU":SU_NAMES,"EC":EC_NAMES};
+
+function dd(s){const m=s.match(/D(\d+)/i);return m?+m[1]:6;}
+function rD(s){return Math.floor(Math.random()*s)+1;}
+function rF(s){let r=rD(s);if(r===1)r=rD(s);return r;}
+function nextDie(d){const seq=[4,6,8,10,12,20];const i=seq.indexOf(d);return i>0?seq[i-1]:4;}
+
+function setTog(el){
+  const g=el.dataset.group;
+  document.querySelectorAll('[data-group="'+g+'"]').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');S[g]=el.dataset.val;
+  refreshEffDef('r');refreshEffDef('m');
+}
+
+
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+// ── Faction selects ──────────────────────────────────────
+function buildFactionSelects(){
+  const sel=document.getElementById('rDefFaction');
+  if(sel) sel.innerHTML='<option value="EC">Eastern Coalition</option><option value="SU">Sol Union</option>';
+  buildDefList('r');
+}
+
+function buildDefList(side){
+  const facEl=document.getElementById(side+'DefFaction');
+  const unitEl=document.getElementById(side+'DefUnit');
+  if(!facEl||!unitEl) return;
+  const fac=facEl.value;
+  unitEl.innerHTML=FAC_NAMES[fac].map(n=>'<option value="'+n+'">'+n+'</option>').join('');
+  defUnitChanged(side);
+}
+
+// ── Slots ────────────────────────────────────────────────
+function makeUnitOpts(fac){
+  return FAC_NAMES[fac].map(n=>'<option value="'+n+'">'+n+'</option>').join('');
+}
+
+function addSlot(side){
+  const container=document.getElementById(side+'SlotContainer');
+  if(container.querySelectorAll('.squad-slot').length>=3)return;
+  const cnt=side==='r'?++slotCountR:++slotCountM;
+  const id=side+'slot'+cnt;
+  const defFac=document.getElementById(side+'DefFaction').value;
+  const attFac=defFac==="EC"?"SU":"EC";
+  const div=document.createElement('div');
+  div.className='squad-slot';div.id=id;
+  // Range toggle only for ranged slots
+  const rangeRow=side==='r'
+    ?'<div class="slot-row"><label>Range</label>'
+     +'<div class="tog-group" data-group="range_'+id+'" style="flex:1">'
+     +'<button class="tog active" data-group="range_'+id+'" data-val="optimum" onclick="setSlotTog(this,\''+id+'\')">Opt +1</button>'
+     +'<button class="tog" data-group="range_'+id+'" data-val="normal" onclick="setSlotTog(this,\''+id+'\')">Normal</button>'
+     +'<button class="tog" data-group="range_'+id+'" data-val="long" onclick="setSlotTog(this,\''+id+'\')">Long −1</button>'
+     +'</div></div>'
+    :'';
+  const supRow=side==='m'
+    ?'<div class="slot-row"><label>Suppression</label>'
+     +'<input type="number" id="'+id+'_sup" min="0" max="4" value="0" style="width:52px" oninput="slotInfo(\''+id+'\',\''+side+'\')">'
+     +'<span style="font-size:10px;color:#666;margin-left:4px">4=Pinned</span></div>'
+    :'';
+  div.innerHTML=
+    '<div class="slot-head"><span class="slot-title">Unit type '+(container.querySelectorAll('.squad-slot').length+1)+'</span>'
+    +'<button class="remove-slot" onclick="removeSlot(\''+id+'\',\''+side+'\')">×</button></div>'
+    +'<div class="slot-row"><label>Faction</label>'
+    +'<select onchange="slotFacChange(this,\''+id+'\')">'
+    +'<option value="SU"'+(attFac==="SU"?' selected':'')+'>Sol Union</option>'
+    +'<option value="EC"'+(attFac==="EC"?' selected':'')+'>East. Coalition</option>'
+    +'</select></div>'
+    +'<div class="slot-row"><label>Unit</label>'
+    +'<select id="'+id+'_unit" onchange="slotUnitChange(\''+id+'\',\''+side+'\')">'
+    +makeUnitOpts(attFac)+'</select></div>'
+    +'<div class="slot-row"><label>'+(side==='r'?'Weapon':'Melee wpn')+'</label>'
+    +'<select id="'+id+'_wpn" onchange="slotInfo(\''+id+'\',\''+side+'\')"></select></div>'
+    +'<div class="slot-row"><label>Models</label>'
+    +'<input type="number" id="'+id+'_cnt" min="1" max="8" value="3" oninput="slotInfo(\''+id+'\',\''+side+'\')"></div>'
+    +rangeRow+supRow
+    +'<div class="slot-winfo" id="'+id+'_winfo"></div>';
+  container.appendChild(div);
+  slotUnitChange(id,side);
+  renumberSlots(side);
+}
+
+function setSlotTog(el,id){
+  const g=el.dataset.group;
+  document.querySelectorAll('[data-group="'+g+'"]').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  slotInfo(id,'r');
+}
+
+function getSlotRange(id){
+  const active=document.querySelector('[data-group="range_'+id+'"].active');
+  return active?active.dataset.val:'normal';
+}
+
+
+function removeSlot(id,side){
+  const el=document.getElementById(id);if(el)el.remove();
+  renumberSlots(side);
+}
+
+function renumberSlots(side){
+  document.getElementById(side+'SlotContainer').querySelectorAll('.slot-title').forEach((el,i)=>{
+    el.textContent='Unit type '+(i+1);
+  });
+}
+
+function slotFacChange(sel,id){
+  const uSel=document.getElementById(id+'_unit');
+  uSel.innerHTML=makeUnitOpts(sel.value);
+  // figure out side from id prefix
+  const side=id.startsWith('r')?'r':'m';
+  slotUnitChange(id,side);
+}
+
+function slotUnitChange(id,side){
+  const uName=document.getElementById(id+'_unit').value;
+  const u=UNITS[uName];if(!u)return;
+  const wSel=document.getElementById(id+'_wpn');
+  let weapons=u.w;
+  if(side==='r'){
+    // Ranged: exclude melee-only and APPD (contact-only trigger, not a fired weapon)
+    weapons=u.w.filter(w=>{
+      const wd=WEAPONS[w];
+      if(!wd)return false;
+      if(wd.range==='melee'||wd.range==='contact')return false;
+      if(wd.rules&&wd.rules.includes('APPD'))return false;
+      return true;
+    });
+    if(!weapons.length)weapons=u.w.filter(w=>WEAPONS[w]&&WEAPONS[w].range!=='melee');
+  } else {
+    // Melee: prefer melee weapons, show all
+    const meleeFirst=[
+      ...u.w.filter(w=>WEAPONS[w]&&WEAPONS[w].rules&&WEAPONS[w].rules.includes('Melee')),
+      ...u.w.filter(w=>WEAPONS[w]&&(!WEAPONS[w].rules||!WEAPONS[w].rules.includes('Melee')))
+    ];
+    weapons=meleeFirst.length?meleeFirst:u.w;
+  }
+  wSel.innerHTML=weapons.map(w=>'<option value="'+w+'">'+w+'</option>').join('');
+  if(!wSel.innerHTML)wSel.innerHTML='<option value="">No ranged weapons</option>';
+  slotInfo(id,side);
+}
+
+function slotInfo(id,side){
+  const wName=document.getElementById(id+'_wpn').value;
+  const w=WEAPONS[wName];
+  const n=parseInt(document.getElementById(id+'_cnt').value)||1;
+  const uName=document.getElementById(id+'_unit').value;
+  const u=UNITS[uName];
+  const el=document.getElementById(id+'_winfo');
+  if(!el)return;
+  if(!w){el.textContent='';return;}
+  if(side==='r'){
+    el.textContent=w.dam+' ROF '+w.rof+' — '+n+' model'+(n>1?'s':'')+' = '+(n*w.rof)+' rolls | '+(w.rules.join(', ')||'none');
+  } else {
+    const apex=u&&u.kw&&/apex/i.test(u.kw);
+    const supEl=document.getElementById(id+'_sup');
+    const sup=supEl?Math.min(parseInt(supEl.value)||0,4):0;
+    const pinned=sup>=4;
+    const suppressedModels=pinned?n:Math.min(sup,n);
+    const activeModels=Math.max(0,n-suppressedModels);
+    const totalAtk=u?(activeModels*u.melee):activeModels;
+    const fortPenalty=sup>=2||pinned?'−1 Fortune':'';
+    el.textContent='Active: '+activeModels+'/'+n+(suppressedModels?' ('+suppressedModels+' suppressed)':'')
+      +' | Attacks: '+totalAtk+(apex?' Apex':'')
+      +(fortPenalty?' | '+fortPenalty:'')
+      +(pinned?' | PINNED':'');
+  }
+}
+
+// ── Target panel ─────────────────────────────────────────
+function defUnitChanged(side){
+  const uNameEl=document.getElementById(side+'DefUnit');
+  if(!uNameEl) return;
+  const u=UNITS[uNameEl.value];if(!u)return;
+  const isArmor=u.struct!==null;
+  const isMecha=u.role==='mecha'||u.role==='Mecha';
+  const armorSec=document.getElementById(side+'ArmorSec');
+  if(armorSec) armorSec.style.display=isArmor?'block':'none';
+  if(side==='r') rArmDmg=0;
+  buildATrack(side);
+  const tough=u.kw&&/tough/i.test(u.kw);
+  const hasERA=u.kw&&/era/i.test(u.kw);
+  const isInfantry=!isArmor&&!isMecha;
+  // Show/hide ERA, Tough, GTG rows
+  if(side==='r'){
+    const eraRow=document.getElementById('eraRow');
+    const toughRow=document.getElementById('toughRow');
+    const gtgRow=document.getElementById('gtgRow');
+    if(eraRow) eraRow.style.display=hasERA?'block':'none';
+    if(toughRow) toughRow.style.display=tough?'block':'none';
+    if(gtgRow) gtgRow.style.display=isInfantry?'flex':'none';
+    // Reset GTG to No when switching units
+    const gtgNo=document.querySelector('[data-group="gtg"][data-val="no"]');
+    if(gtgNo){
+      document.querySelectorAll('[data-group="gtg"]').forEach(b=>b.classList.remove('active'));
+      gtgNo.classList.add('active');
+    }
+  }
+  const statsEl=document.getElementById(side+'DefStats');
+  if(statsEl) statsEl.innerHTML='<b>Role:</b> '+u.role+' | <b>Def:</b> '+u.def+' | <b>HP:</b> '+(u.struct??'—')+' | <b>Skill:</b> '+u.skill+(tough?' | <b style="color:#f57878">TOUGH</b>':'')+(hasERA?' | <b style="color:#f5c842">ERA</b>':'')+' | <b>Melee atk:</b> '+u.melee;
+  refreshEffDef(side);
+}
+
+function buildATrack(side){
+  const t=document.getElementById(side+'Atrack');
+  if(!t) return;
+  const armDmg=side==='r'?rArmDmg:0;
+  t.innerHTML='<span style="font-size:11px;color:#888">Armor crit:</span>';
+  for(let i=1;i<=5;i++){
+    const p=document.createElement('div');
+    p.className='apip'+(i<=armDmg?' hit':'');
+    p.textContent='−'+i;
+    (function(n,s){p.onclick=function(){
+      if(s==='r')rArmDmg=(rArmDmg===n)?n-1:n;
+      buildATrack(s);refreshEffDef(s);
+    };})(i,side);
+    t.appendChild(p);
+  }
+}
+
+function refreshEffDef(side){
+  const uNameEl=document.getElementById(side+'DefUnit');
+  if(!uNameEl) return;
+  const u=UNITS[uNameEl.value];
+  const el=document.getElementById(side+'Effdef');
+  if(!u||u.struct===null){if(el)el.textContent='';return;}
+  const armDmg=side==='r'?rArmDmg:0;
+  const fac=S.facing;
+  let d=u.def;
+  if(fac==='side')d-=1;if(fac==='rear')d-=2;
+  d-=armDmg;
+  if(el)el.textContent='Effective defense: '+d;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RANGED FIRE
+// ═══════════════════════════════════════════════════════════
+function rollRanged(){
+  const slots=document.getElementById('rSlotContainer').querySelectorAll('.squad-slot');
+  if(!slots.length){document.getElementById('rResults').innerHTML='<div class="nores">Add at least one unit type first.</div>';return;}
+  const defName=document.getElementById('rDefUnit').value;
+  const du=UNITS[defName];if(!du)return;
+  const es=parseInt(document.getElementById('rExistingSup').value)||0;
+  const isArmor=du.struct!==null,isMecha=du.role==='mecha'||du.role==='Mecha';
+  const tough=du.kw&&/tough/i.test(du.kw);
+  const hasERA=du.kw&&/era/i.test(du.kw);
+  let fm=0;if(isArmor){if(S.facing==='side')fm=-1;if(S.facing==='rear')fm=-2;}
+  const ed=du.def+fm-rArmDmg;
+
+  // Cover state
+  const coverEl=document.querySelector('[data-group="cover"].active');
+  const coverState=coverEl?coverEl.dataset.val:'none';
+  const coverMod=coverState==='cover2'?-2:coverState==='cover1'?-1:0;
+
+  // Go to ground
+  const gtgEl=document.querySelector('[data-group="gtg"].active');
+  const gtgActive=gtgEl&&gtgEl.dataset.val==='yes';
+  // GTG: first attack at current cover, subsequent at Cover 1 minimum
+  // Track global attack index across all slots/models/shots
+  let attackIndex=0;
+
+  // ERA
+  const eraEl=document.getElementById('eraActive');
+  let eraReady=hasERA&&eraEl&&eraEl.checked;
+
+  const modMod=(S.mode==='overwatch'||S.mode==='splitfire')?-1:0;
+  const lines=[];let totCas=0,totDmg=0,totSup=0,lastFort=0;
+  const crits=[];
+
+  lines.push('<span class="inf2">Target: '+defName+' | Eff. def: '+ed
+    +(coverState!=='none'?' | '+coverState:'')
+    +(gtgActive?' | Go to Ground (first attack open, rest Cover 1)':'')
+    +(eraReady?' | ERA ready':'')
+    +(tough?' | TOUGH':'')+'</span>');
+  lines.push('');
+
+  slots.forEach(function(slot,si){
+    const id=slot.id;
+    const uName=document.getElementById(id+'_unit').value;
+    const wName=document.getElementById(id+'_wpn').value;
+    const nm=parseInt(document.getElementById(id+'_cnt').value)||1;
+    const u=UNITS[uName],w=WEAPONS[wName];
+    if(!u||!w)return;
+
+    const slotRange=getSlotRange(id);
+    const rm=slotRange==='optimum'?1:slotRange==='long'?-1:0;
+    const fs=dd(u.skill),ds=dd(w.dmg);
+    const isInfWpn=w.rules&&w.rules.includes('Infantry');
+    const ignoresCover=w.rules&&w.rules.includes('Ignores cover');
+
+    lines.push('<span class="inf2">── Slot '+(si+1)+': '+uName+' × '+nm+' ('+wName+')'
+      +' | '+slotRange+(rm!==0?' ('+(rm>0?'+':'')+rm+')':'')+'</span>');
+
+    for(let m=0;m<nm;m++){
+      let rf=rF(fs);
+
+      // GTG cover modifier: attack 0 = no cover bonus, attacks 1+ = at least cover1
+      const gtgMod=gtgActive?(attackIndex===0?0:Math.min(coverMod,-1)):coverMod;
+      const ec=ignoresCover?0:gtgMod;
+
+      const mf=Math.max(0,rf+rm+ec+modMod);
+      lastFort=rf;// use natural roll for Tough check
+      lines.push('<span class="inf2">&nbsp;&nbsp;Model '+(m+1)+(gtgActive&&attackIndex===0?' [open — GTG first attack]':gtgActive?' [Cover 1 — GTG]':'')+': Fortune '+rf+(mf!==rf?' → '+mf:'')+'</span>');
+
+      for(let r=0;r<w.rof;r++){
+        attackIndex++;
+        const wd=rD(ds),tot=mf+wd,ex=tot-ed;
+        if(ex<=0){lines.push('<span class="miss">&nbsp;&nbsp;&nbsp;&nbsp;Shot '+r+': wpn '+wd+' → '+tot+' vs '+ed+' — miss</span>');continue;}
+
+        if(isArmor||isMecha){
+          if(isInfWpn&&isArmor&&!isMecha){lines.push('<span class="miss">&nbsp;&nbsp;&nbsp;&nbsp;Infantry wpn vs armor — no effect</span>');continue;}
+          const dmg=Math.min(3,ex);
+
+          // ERA check
+          if(eraReady){
+            const eraRoll=rD(6);
+            if(eraRoll>=4){
+              lines.push('<span class="crit">&nbsp;&nbsp;&nbsp;&nbsp;ERA triggered! Roll '+eraRoll+' (4+) — '+dmg+' dmg and any crits negated. ERA now expended.</span>');
+              eraReady=false;
+              if(eraEl)eraEl.checked=false;
+              continue;
+            } else {
+              lines.push('<span class="inf2">&nbsp;&nbsp;&nbsp;&nbsp;ERA failed (roll '+eraRoll+', need 4+) — damage applies</span>');
+              eraReady=false;
+              if(eraEl)eraEl.checked=false;
+            }
+          }
+
+          totDmg+=dmg;
+          const crit=resolveCrit(mf,dmg,defName);
+          let critStr='';
+          if(crit){crits.push(crit);critStr=' | <span class="crit">CRIT: '+crit.detail+'</span>';}
+          lines.push('<span class="hit">&nbsp;&nbsp;&nbsp;&nbsp;Shot '+r+': wpn '+wd+' → '+tot+' — HIT '+dmg+' dmg (Fort '+mf+')'+critStr+'</span>');
+        } else {
+          // Infantry target
+          let sup=0,cas=0;
+          if(ex>=1)sup=1;if(ex>=2){sup=1;cas=1;}if(ex>=3){sup=2;cas=1;}
+
+          // Tough check — infantry weapon needs natural Fortune 6+
+          if(cas>0&&tough&&isInfWpn&&rf<6){
+            lines.push('<span class="miss">&nbsp;&nbsp;&nbsp;&nbsp;Shot '+r+': wpn '+wd+' → '+tot+' (excess '+ex+') — TOUGH: Fortune '+rf+' < 6, no casualty. '+sup+' sup only.</span>');
+            totSup+=sup;continue;
+          }
+
+          totSup+=sup;totCas+=cas;
+          lines.push('<span class="hit">&nbsp;&nbsp;&nbsp;&nbsp;Shot '+r+': wpn '+wd+' → '+tot+' (excess '+ex+') — '+cas+' cas, '+sup+' sup</span>');
+        }
+      }
+    }
+    lines.push('');
+  });
+
+  if(gtgActive) totSup=Math.min(totSup+1,4);// GTG adds 1 suppression to target
+  totSup=Math.min(totSup+es,4);
+  if(gtgActive) lines.push('<span class="inf2">+1 suppression applied for Go to Ground</span>');
+  renderRangedResults(isArmor||isMecha,du,defName,totDmg,totCas,totSup,lastFort,lines,crits);
+}
+
+
+function renderRangedResults(isArmor,du,defName,totDmg,totCas,totSup,lastFort,lines,crits){
+  const ra=document.getElementById('rResults');
+  let html='';
+  if(isArmor){
+    const rem=Math.max(0,du.struct-totDmg),dest=totDmg>=(du.struct||999);
+    html+='<div class="metrics">'
+      +'<div class="metric"><div class="v '+(totDmg>0?'r':'')+'">'+totDmg+'</div><div class="l">Damage</div></div>'
+      +'<div class="metric"><div class="v '+(rem===0?'r':rem<=2?'a':'')+'">'+rem+'</div><div class="l">HP left</div></div>'
+      +'<div class="metric"><div class="v b">'+lastFort+'</div><div class="l">Last Fortune</div></div>'
+      +'<div class="metric"><div class="v '+(dest?'r':'')+'">'+( dest?'DESTROYED':'Intact')+'</div><div class="l">Status</div></div>'
+      +'</div>';
+  }else{
+    const st=totSup>=4?'Pinned':totSup>=2?'−1 Fort':'Clear';
+    const sc=totSup>=4?'r':totSup>=2?'a':'g';
+    html+='<div class="metrics">'
+      +'<div class="metric"><div class="v '+(totCas>0?'r':'')+'">'+totCas+'</div><div class="l">Casualties</div></div>'
+      +'<div class="metric"><div class="v '+sc+'">'+totSup+'</div><div class="l">Suppression</div></div>'
+      +'<div class="metric"><div class="v b">'+lastFort+'</div><div class="l">Fortune die</div></div>'
+      +'<div class="metric"><div class="v '+sc+'">'+st+'</div><div class="l">Status</div></div>'
+      +'</div>';
+  }
+  if(crits.length){
+    crits.forEach(c=>{
+      const isCat=c.code==='CATASTROPHIC';
+      html+='<div class="crit-box'+(isCat?' catastrophic':'')+'"><div class="crit-title">Critical effect</div>'+c.detail+'</div>';
+    });
+  }
+  html+='<div class="log">'+lines.join('<br>')+'</div>';
+  ra.innerHTML=html;
+}
+
+// ═══════════════════════════════════════════════════════════
+// MELEE
+// ═══════════════════════════════════════════════════════════
+// ── Melee state ──────────────────────────────────────────
+const MS={attSkill:6,defSkill:6,attWpn:"standard",defType:"infantry"};
+let mArmDmg2=0;
+
+function setMTog(el){
+  const g=el.dataset.group;
+  document.querySelectorAll('[data-group="'+g+'"]').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  MS[g]=isNaN(+el.dataset.val)?el.dataset.val:+el.dataset.val;
+}
+
+function toggleStructRow(){
+  const defType=document.querySelector('[data-group="defType"].active');
+  const isVehicle=defType&&(defType.dataset.val==='armor'||defType.dataset.val==='mecha');
+  document.getElementById('defStructRow').style.display=isVehicle?'flex':'none';
+  document.getElementById('mVehicleSec').style.display=isVehicle?'block':'none';
+  if(isVehicle)buildATrack2();
+}
+
+function buildATrack2(){
+  const t=document.getElementById('mAtrack2');
+  t.innerHTML='<span style="font-size:11px;color:#888">Armor crit:</span>';
+  for(let i=1;i<=5;i++){
+    const p=document.createElement('div');
+    p.className='apip'+(i<=mArmDmg2?' hit':'');
+    p.textContent='−'+i;
+    (function(n){p.onclick=function(){mArmDmg2=(mArmDmg2===n)?n-1:n;buildATrack2();updateMEffDef();};})(i);
+    t.appendChild(p);
+  }
+}
+
+function updateMEffDef(){
+  const defType=document.querySelector('[data-group="defType"].active');
+  const isVehicle=defType&&(defType.dataset.val==='armor'||defType.dataset.val==='mecha');
+  const el=document.getElementById('mEffdef2');
+  if(!el||!isVehicle){return;}
+  el.textContent='Armor crit penalty: −'+mArmDmg2+' to defense';
+}
+
+function rollMelee(){
+  // ── Read attacker ──
+  const attSkillEl=document.querySelector('[data-group="attSkill"].active');
+  const attSkill=attSkillEl?+attSkillEl.dataset.val:6;
+  const attModels=parseInt(document.getElementById('attModels').value)||1;
+  const attApM=parseInt(document.getElementById('attApM').value)||1;
+  const attWpnEl=document.querySelector('[data-group="attWpn"].active');
+  const attWpn=attWpnEl?attWpnEl.dataset.val:'standard';
+  const attRawSup=Math.min(parseInt(document.getElementById('attSup').value)||0,4);
+  const attPinned=attRawSup>=4;
+  const attSup=attPinned?4:attRawSup;
+  const attFortPenalty=(attSup>=2?-1:0)+(document.getElementById('attFeral').checked?1:0);
+  const attSuppressedModels=attPinned?attModels:Math.min(attSup,attModels);
+  const attActiveModels=Math.max(0,attModels-attSuppressedModels);
+  const attApex=document.getElementById('attApex').checked;
+  const attTough=document.getElementById('attTough').checked;
+  const totalAttAtk=attActiveModels*attApM;
+
+  // ── Read defender ──
+  const defSkillEl=document.querySelector('[data-group="defSkill"].active');
+  const defSkill=defSkillEl?+defSkillEl.dataset.val:6;
+  const defModels=parseInt(document.getElementById('defModels').value)||1;
+  const defApM=parseInt(document.getElementById('defApM').value)||1;
+  const defTypeEl=document.querySelector('[data-group="defType"].active');
+  const defType=defTypeEl?defTypeEl.dataset.val:'infantry';
+  const defStruct=parseInt(document.getElementById('defStruct').value)||6;
+  const defRawSup=Math.min(parseInt(document.getElementById('defSup').value)||0,4);
+  const defPinned=defRawSup>=4;
+  const defSup=defPinned?4:defRawSup;
+  const defFortPenalty=(defSup>=2?-1:0)+(document.getElementById('defFeral').checked?1:0);
+  const defSuppressedModels=defPinned?defModels:Math.min(defSup,defModels);
+  const defActiveModels=Math.max(0,defModels-defSuppressedModels);
+  const defApex=document.getElementById('defApex').checked;
+  const defTough=document.getElementById('defTough').checked;
+  const totalDefAtk=defActiveModels*defApM;
+
+  const isVehicle=defType==='armor'||defType==='mecha';
+  const paired=Math.min(totalAttAtk,totalDefAtk);
+  const attUncontested=Math.max(0,totalAttAtk-paired);
+  const defUncontested=Math.max(0,totalDefAtk-paired);
+
+  const lines=[];
+  let attCas=0,defCas=0,defDmg=0;
+  const crits=[];
+
+  // ── Header ──
+  lines.push('<span class="inf2">Attacker: '+attActiveModels+'/'+attModels+' active'+(attSuppressedModels?' ('+attSuppressedModels+' suppressed'+(attPinned?' PINNED':'')+')'  :'')+' | '+totalAttAtk+' attack'+(totalAttAtk!==1?'s':'')+(attFortPenalty!==0?' | Fortune '+(attFortPenalty>0?'+':'')+attFortPenalty:''+(attApex?' | Apex':''))+'</span>');
+  lines.push('<span class="inf2">Defender: '+defActiveModels+'/'+defModels+' active'+(defSuppressedModels?' ('+defSuppressedModels+' suppressed'+(defPinned?' PINNED':'')+')'  :'')+' | '+totalDefAtk+' attack'+(totalDefAtk!==1?'s':'')+(defFortPenalty!==0?' | Fortune '+(defFortPenalty>0?'+':'')+defFortPenalty:''+(defApex?' | Apex':''))+'</span>');
+  lines.push('<span class="inf2">Paired: '+paired+' | Att uncontested: '+attUncontested+' | Def uncontested: '+defUncontested+'</span>');
+  lines.push('');
+
+  function rollFort(sides,penalty,apex){
+    let r=rF(sides);
+    if(apex){const r2=rF(sides);if(r2>r)r=r2;}
+    return{raw:r,mod:Math.max(0,r+penalty)};
+  }
+
+  // ── Paired exchanges ──
+  if(paired>0)lines.push('<span class="inf2">── Paired exchanges ──</span>');
+  for(let i=0;i<paired;i++){
+    const af=rollFort(attSkill,attFortPenalty,attApex);
+    const am=rD(6);// melee weapon die D6
+    const aTotal=af.mod+am;
+    const df=rollFort(defSkill,defFortPenalty,defApex);
+    const dm=rD(6);
+    const dTotal=df.mod+dm;
+    const aStr='Att Fort '+af.raw+(af.raw!==af.mod?' →'+af.mod:'')+'+Melee '+am+'='+aTotal;
+    const dStr='Def Fort '+df.raw+(df.raw!==df.mod?' →'+df.mod:'')+'+Melee '+dm+'='+dTotal;
+    lines.push('<span class="inf2">Exchange '+(i+1)+': '+aStr+' vs '+dStr+'</span>');
+
+    if(aTotal>dTotal){
+      // att wins
+      if(isVehicle){
+        const c=resolveCrit(af.mod,1,'');// generic — no unit name
+        const cLabel=c?c.detail:'no crit result';
+        if(c)crits.push(c);
+        lines.push('<span class="hit">&nbsp;&nbsp;Att wins → Crit DAM 1 Fort '+af.mod+': '+cLabel+'</span>');
+      } else {
+        if(defTough&&af.raw<defSkill){
+          lines.push('<span class="miss">&nbsp;&nbsp;Att wins but TOUGH — Fortune not max, no casualty</span>');
+        } else {
+          defCas++;lines.push('<span class="hit">&nbsp;&nbsp;Att wins → 1 def casualty</span>');
+        }
+      }
+    } else {
+      // def wins (ties→def)
+      if(attTough&&df.raw<defSkill){
+        lines.push('<span class="miss">&nbsp;&nbsp;Def wins but att TOUGH — Fortune not max, no casualty</span>');
+      } else {
+        attCas++;lines.push('<span class="hit">&nbsp;&nbsp;Def wins → 1 att casualty</span>');
+      }
+    }
+  }
+
+  // ── Attacker uncontested ──
+  if(attUncontested>0){
+    lines.push('');lines.push('<span class="inf2">── Attacker uncontested ('+attUncontested+') ──</span>');
+    const isAT=attWpn==='at';
+    const isIAT=attWpn==='iat';
+    if(isVehicle){
+      if(isAT||isIAT){
+        const combinedDmg=Math.min(3,attUncontested);
+        const af=rollFort(attSkill,attFortPenalty,attApex);
+        if(isIAT&&af.raw<6){
+          lines.push('<span class="miss">&nbsp;&nbsp;IAT: needs natural 6, rolled '+af.raw+' — no effect</span>');
+        } else {
+          defDmg+=combinedDmg;
+          const c=resolveCrit(af.mod,combinedDmg,'');
+          const cLabel=c?c.detail:'no crit result';
+          if(c)crits.push(c);
+          lines.push('<span class="hit">&nbsp;&nbsp;AT melee '+attUncontested+' atk → DAM '+combinedDmg+' Fort '+af.mod+': '+cLabel+'</span>');
+        }
+      } else {
+        // standard — DAM 1 only, each separately
+        for(let i=0;i<attUncontested;i++){
+          const af=rollFort(attSkill,attFortPenalty,attApex);
+          const c=resolveCrit(af.mod,1,'');
+          const cLabel=c?c.detail:'no crit result';
+          if(c)crits.push(c);
+          lines.push('<span class="'+(c?'hit':'miss')+'">&nbsp;&nbsp;Uncontested '+(i+1)+': Fort '+af.mod+' → '+cLabel+'</span>');
+        }
+      }
+    } else {
+      // vs infantry
+      for(let i=0;i<attUncontested;i++){
+        const af=rollFort(attSkill,attFortPenalty,attApex);
+        if(defTough){
+          if(af.raw>=attSkill){defCas++;lines.push('<span class="hit">&nbsp;&nbsp;Uncontested '+(i+1)+': Fort '+af.raw+' — TOUGH met → casualty</span>');}
+          else lines.push('<span class="miss">&nbsp;&nbsp;Uncontested '+(i+1)+': Fort '+af.raw+' — TOUGH, need '+attSkill+' — miss</span>');
+        } else {
+          if(af.mod>=4){defCas++;lines.push('<span class="hit">&nbsp;&nbsp;Uncontested '+(i+1)+': Fort '+af.mod+' (4+) → casualty</span>');}
+          else lines.push('<span class="miss">&nbsp;&nbsp;Uncontested '+(i+1)+': Fort '+af.mod+' — miss</span>');
+        }
+      }
+    }
+  }
+
+  // ── Defender uncontested ──
+  if(defUncontested>0){
+    lines.push('');lines.push('<span class="inf2">── Defender uncontested ('+defUncontested+') ──</span>');
+    for(let i=0;i<defUncontested;i++){
+      const df=rollFort(defSkill,defFortPenalty,defApex);
+      if(attTough){
+        if(df.raw>=defSkill){attCas++;lines.push('<span class="hit">&nbsp;&nbsp;Def uncontested '+(i+1)+': Fort '+df.raw+' — att TOUGH met → casualty</span>');}
+        else lines.push('<span class="miss">&nbsp;&nbsp;Def uncontested '+(i+1)+': Fort '+df.raw+' — att TOUGH, need '+defSkill+' — miss</span>');
+      } else {
+        if(df.mod>=4){attCas++;lines.push('<span class="hit">&nbsp;&nbsp;Def uncontested '+(i+1)+': Fort '+df.mod+' (4+) → att casualty</span>');}
+        else lines.push('<span class="miss">&nbsp;&nbsp;Def uncontested '+(i+1)+': Fort '+df.mod+' — miss</span>');
+      }
+    }
+  }
+
+  // ── Aftermath ──
+  lines.push('');lines.push('<span class="inf2">── Aftermath ──</span>');
+  lines.push('<span class="'+(attCas>0?'hit':'good')+'">Attacker casualties: '+attCas+' (from '+attModels+' total incl. suppressed)</span>');
+  if(isVehicle){
+    const rem=Math.max(0,defStruct-defDmg);
+    lines.push('<span class="'+(defDmg>0?'hit':'good')+'">Defender structure damage: '+defDmg+' | HP remaining: '+rem+(defDmg>=defStruct?' — DESTROYED':'')+'</span>');
+  } else {
+    const supFromCas=Math.min(defCas,4);
+    const finalSup=Math.min(defSup+supFromCas,4);
+    lines.push('<span class="'+(defCas>0?'hit':'good')+'">Defender casualties: '+defCas+' | Suppression now: '+finalSup+(finalSup>=4?' — PINNED':'')+'</span>');
+    if(defCas>defActiveModels*0.5&&defActiveModels>0)lines.push('<span class="crit">Defender over 50% active losses — morale check required</span>');
+  }
+
+  // ── Render ──
+  const mr=document.getElementById('mResults');
+  let html='<div class="metrics">'
+    +'<div class="metric"><div class="v '+(attCas>0?'r':'g')+'">'+attCas+'</div><div class="l">Att casualties</div></div>';
+  if(isVehicle){
+    const rem=Math.max(0,defStruct-defDmg);
+    html+='<div class="metric"><div class="v '+(defDmg>0?'r':'g')+'">'+defDmg+'</div><div class="l">Def damage</div></div>'
+      +'<div class="metric"><div class="v '+(rem===0?'r':rem<=2?'a':'')+'">'+rem+'</div><div class="l">HP left</div></div>'
+      +'<div class="metric"><div class="v '+(defDmg>=defStruct?'r':'g')+'">'+(defDmg>=defStruct?'DESTROYED':'Intact')+'</div><div class="l">Status</div></div>';
+  } else {
+    const supFromCas=Math.min(defCas,4);
+    const finalSup=Math.min(defSup+supFromCas,4);
+    const sc=finalSup>=4?'r':finalSup>=2?'a':'g';
+    const st=finalSup>=4?'Pinned':finalSup>=2?'−1 Fort':'Clear';
+    html+='<div class="metric"><div class="v '+(defCas>0?'r':'g')+'">'+defCas+'</div><div class="l">Def casualties</div></div>'
+      +'<div class="metric"><div class="v '+sc+'">'+finalSup+'</div><div class="l">Def suppression</div></div>'
+      +'<div class="metric"><div class="v '+sc+'">'+st+'</div><div class="l">Def status</div></div>';
+  }
+  html+='</div>';
+  crits.forEach(c=>{
+    html+='<div class="crit-box'+(c.code==='CATASTROPHIC'?' catastrophic':'')+'"><div class="crit-title">Critical effect</div>'+c.detail+'</div>';
+  });
+  html+='<div class="log">'+lines.join('<br>')+'</div>';
+  mr.innerHTML=html;
+}
+
+
+
+// ── Help modal ────────────────────────────────────────────
+function showHelp(){document.getElementById('helpModal').style.display='block';}
+function hideHelp(){document.getElementById('helpModal').style.display='none';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')hideHelp();});
+
+// ── Init ─────────────────────────────────────────────────
+buildFactionSelects();
+addSlot('r');
+</script>
+</body>
+</html>

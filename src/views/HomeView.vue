@@ -1,10 +1,7 @@
 <template>
-  <main>
-    <CPage />
-  </main>
+  <vPage />
 </template>
 
 <script setup>
-import CPage from '@/components/cPage.vue';
-
+import vPage from '@/View/vPage.vue';
 </script>

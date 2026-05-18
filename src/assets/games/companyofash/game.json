@@ -1,0 +1,31 @@
+{
+  "id": "companyofash",
+  "anchorId": "CompanyOfAsh",
+  "navLabel": "Company of Ash",
+  "order": 3,
+  "kicker": "Tactical Warfare Game",
+  "title": "Company of Ash: Grimdark Skirmish Warfare",
+  "intro": "Command elite military units in a war-torn fantasy realm where steel, tactics, and cunning determine victory. Engage in intense squad-based combat with dynamic terrain, destructible environments, and devastating special abilities.",
+  "logoPath": "games/companyofash/logo/coalogo.png",
+  "logoAlt": "Company of Ash Logo",
+  "ctaTo": "/companyofash",
+  "ctaLabel": "Build Your Army",
+  "features": [
+    {
+      "title": "Tactical Squad Combat",
+      "description": "Lead your Company through intense skirmish battles using positioning, cover mechanics, and coordinated squad maneuvers. Every decision matters as you adapt to the ever-changing battlefield."
+    },
+    {
+      "title": "Army Builder Tools",
+      "description": "Customize your forces with the interactive Army Builder. Select units, equip them with devastating weapons, and balance your force composition to counter your opponent's strategy."
+    },
+    {
+      "title": "Advanced Combat Calculator",
+      "description": "Resolve complex combat interactions with our integrated Combat Calculator. Factor in range, cover, facing, and unit capabilities to determine outcomes with precision and speed."
+    },
+    {
+      "title": "Expandable Universe",
+      "description": "From elite infantry to heavily armored walkers, the Company of Ash universe continues to grow with new unit types, weapons, and special rules to keep the game fresh and engaging."
+    }
+  ]
+}

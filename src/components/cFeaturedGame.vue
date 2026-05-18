@@ -6,7 +6,8 @@
                 <p v-if="game.kicker" class="featured-kicker mb-2">{{ game.kicker }}</p>
                 <h1 class="featured-title mb-2">{{ game.title }}</h1>
                 <p class="featured-intro mb-0">{{ game.intro }}</p>
-                <RouterLink v-if="ctaTo" :to="ctaTo" class="featured-cta-btn mt-3">{{ ctaLabel }}</RouterLink>
+                <RouterLink v-if="ctaTo" :to="game.id === 'companyofash' ? '/companyofash' : ctaTo"
+                    class="featured-cta-btn mt-3">{{ ctaLabel }}</RouterLink>
             </header>
 
             <div class="featured-content">

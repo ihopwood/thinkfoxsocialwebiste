@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoA Army Builder</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#1a1a1e;color:#e0e0e0;font-size:13px}
+.app{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
+.sidebar{background:#1e1e24;border-right:0.5px solid #2a2a32;padding:1rem;overflow-y:auto}
+.main{padding:1rem;overflow-y:auto}
+.card{background:#242428;border:0.5px solid #3a3a42;border-radius:10px;padding:.875rem 1rem;margin-bottom:10px}
+.slabel{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:#666;margin-bottom:6px}
+select,input[type=text],input[type=number]{font-family:inherit;font-size:13px;padding:5px 8px;border:0.5px solid #444;border-radius:6px;background:#1a1a1e;color:#e0e0e0;width:100%}
+label.fl{font-size:11px;color:#888;display:block;margin-bottom:3px;margin-top:8px}
+.tog-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.tog{font-size:11px;padding:3px 10px;border:1.5px solid #444;border-radius:6px;cursor:pointer;background:#1a1a1e;color:#888;transition:all .12s}
+.tog.active{background:#1a3a5c;color:#7ab8f5;border-color:#2a6aac;font-weight:500}
+.tog.sz.active{background:#0f2e1a;color:#6ecf8e;border-color:#1a6e3a}
+.btn{padding:7px 12px;font-size:12px;font-weight:500;border-radius:7px;cursor:pointer;border:0.5px solid #555;background:#1a1a1e;color:#e0e0e0;transition:background .12s}
+.btn:hover{background:#2a2a30}.btn:active{transform:scale(.98)}
+.btn.primary{background:#1a3a5c;color:#7ab8f5;border-color:#2a6aac}
+.btn.primary:hover{background:#2a4a6c}
+.btn.danger{color:#f57878;border-color:#555}.btn.danger:hover{background:#3a1010}
+.btn.full{width:100%;margin-top:6px}
+.btn.small{padding:3px 8px;font-size:11px}
+.platoon{background:#1e1e24;border:0.5px solid #3a3a42;border-radius:10px;margin-bottom:12px;overflow:hidden}
+.pl-head{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:#242428;border-bottom:0.5px solid #3a3a42}
+.pl-title{font-size:13px;font-weight:500;color:#7ab8f5}
+.pl-pts{font-size:12px;color:#f5c842}
+.pl-body{padding:.75rem 1rem}
+.sec-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;background:#111114;border-radius:7px;padding:7px 8px}
+.sec-info{flex:1;min-width:0}
+.sec-name{font-size:12px;color:#e0e0e0;font-weight:500}
+.sec-sub{font-size:10px;color:#555;margin-top:2px;line-height:1.5}
+.sec-pts{font-size:12px;color:#f5c842;min-width:44px;text-align:right;padding-top:1px;flex-shrink:0}
+.sec-acts{display:flex;gap:4px;align-items:flex-start;padding-top:1px;flex-shrink:0}
+.add-row{display:flex;gap:6px;margin-top:8px;align-items:center}
+.add-row select{flex:1}
+.pl-warn{font-size:11px;color:#f5c842;margin-top:5px;padding:3px 7px;background:#3a2a00;border-radius:5px}
+.pl-warn.err{color:#f57878;background:#3a1010}
+.pts-bar{background:#242428;border:0.5px solid #3a3a42;border-radius:10px;padding:.75rem 1rem;margin-bottom:10px}
+.pts-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.pts-val{font-size:20px;font-weight:500;color:#f5c842}
+.pts-meta{font-size:11px;color:#666}
+.pts-track{height:6px;background:#1a1a1e;border-radius:3px;overflow:hidden;margin-top:6px}
+.pts-fill{height:100%;background:#7ab8f5;border-radius:3px;transition:width .3s}
+.pts-fill.warn{background:#f5c842}.pts-fill.over{background:#f57878}
+.warn-item{font-size:11px;color:#f5c842;padding:4px 8px;background:#3a2a00;border-radius:5px;margin-bottom:4px}
+.warn-item.err{color:#f57878;background:#3a1010}
+.asset-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.asset-row label{font-size:12px;color:#888;flex:1}
+.asset-row input{width:55px}
+.divider{height:0.5px;background:#2a2a32;margin:8px 0}
+.empty{color:#555;font-size:12px;text-align:center;padding:2rem}
+.avail{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:500;margin-left:5px;vertical-align:middle}
+.avail.basic{background:#1a3a5c;color:#7ab8f5}
+.avail.platoon{background:#3a2a00;color:#f5c842}
+.avail.company{background:#3a1010;color:#f57878}
+.opt-toggle{font-size:10px;padding:2px 7px;border-radius:4px;border:0.5px solid #444;background:#1a1a1e;color:#666;cursor:pointer;margin-top:4px;display:inline-block}
+.opt-toggle.on{background:#0f2e1a;color:#6ecf8e;border-color:#1a6e3a}
+@media screen{#printSheet{display:none}}
+@media print{
+  body{background:#fff;color:#000}
+  .app{display:none!important}
+  #printSheet{display:block!important;padding:1rem;font-family:system-ui,sans-serif;font-size:11px}
+  .p-head{border-bottom:2px solid #000;margin-bottom:.75rem;padding-bottom:.4rem}
+  .p-army{font-size:18px;font-weight:700}
+  .p-meta{font-size:10px;color:#444;margin-top:2px}
+  .p-platoon{margin-bottom:1.25rem;page-break-inside:avoid}
+  .p-pl-title{font-size:12px;font-weight:600;border-bottom:1px solid #ccc;padding-bottom:2px;margin-bottom:6px;display:flex;justify-content:space-between}
+  .p-unit{margin-bottom:7px;padding:4px 6px;border:0.5px solid #ccc;border-radius:3px;page-break-inside:avoid}
+  .p-uname{font-size:11px;font-weight:600;display:flex;justify-content:space-between}
+  .p-comp{font-size:9px;color:#555;margin-top:1px}
+  .p-stat{font-size:9px;color:#333;margin-top:2px}
+  .p-wpns{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px}
+  .p-wpn{font-size:9px;border:0.5px solid #bbb;border-radius:2px;padding:1px 4px}
+  .p-kw{font-size:9px;color:#555;font-style:italic;margin-top:2px}
+  .p-struct-row{display:flex;align-items:center;gap:4px;margin-top:4px;flex-wrap:wrap}
+  .p-struct-label{font-size:9px;color:#555;white-space:nowrap}
+  .p-sbox{width:14px;height:14px;border:1.5px solid #000;border-radius:2px;display:inline-block}
+  .p-crits{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+  .p-crit{font-size:9px;display:flex;align-items:center;gap:2px;border:0.5px solid #999;border-radius:2px;padding:1px 3px}
+  .p-cbox{width:9px;height:9px;border:1px solid #000;display:inline-block;flex-shrink:0}
+  .p-assets{font-size:10px;margin-bottom:.75rem;padding:4px 6px;border:0.5px solid #ccc;border-radius:3px}
+  .p-warns{margin-top:.75rem;padding:5px;border:1px solid #f5a623;border-radius:3px;background:#fffbe6}
+  .p-witem{font-size:9px;color:#7a5000;margin-bottom:1px}
+  .p-total{font-size:10px;font-weight:600;margin-top:.4rem}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="sidebar">
+  <div style="font-size:16px;font-weight:500;color:#f0f0f0;margin-bottom:1rem">CoA Army Builder</div>
+
+  <div class="card">
+    <div class="slabel">Setup</div>
+    <label class="fl">Army name</label>
+    <input type="text" id="armyName" placeholder="Unnamed force" oninput="refresh()">
+    <label class="fl">Faction</label>
+    <div class="tog-row" id="facTogs">
+      <button class="tog active" data-val="SU" onclick="setFaction(this)">Sol Union</button>
+      <button class="tog" data-val="EC" onclick="setFaction(this)">East. Coalition</button>
+    </div>
+    <label class="fl">Game size</label>
+    <div class="tog-row" id="sizeTogs">
+      <button class="tog sz active" data-val="500" onclick="setSize(this)">500</button>
+      <button class="tog sz" data-val="1000" onclick="setSize(this)">1000</button>
+      <button class="tog sz" data-val="1500" onclick="setSize(this)">1500</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="slabel">Strategic assets <span style="font-size:9px;color:#555;font-weight:400;text-transform:none;letter-spacing:0">— OR not both</span></div>
+    <div class="asset-row"><label>Airstrikes (12pts ea)</label><input type="number" id="airstrikes" min="0" max="6" value="0" oninput="refresh()"></div>
+    <div class="asset-row"><label>Artillery (15pts ea)</label><input type="number" id="artillery" min="0" max="4" value="0" oninput="refresh()"></div>
+    <div id="assetWarn" class="warn-item err" style="display:none;margin-top:6px"></div>
+  </div>
+
+  <button class="btn primary full" onclick="addPlatoon()">+ Add platoon</button>
+  <div class="divider"></div>
+
+  <div class="pts-bar">
+    <div class="pts-row">
+      <span class="pts-val" id="ptsUsed">0</span>
+      <span class="pts-meta" id="ptsOf">of 500pts</span>
+    </div>
+    <div class="pts-row" style="margin-bottom:0">
+      <span class="pts-meta" id="ptsRemain">500 remaining</span>
+    </div>
+    <div class="pts-track"><div class="pts-fill" id="ptsFill" style="width:0%"></div></div>
+  </div>
+
+  <div id="warnsPanel"></div>
+  <button class="btn primary full" onclick="doPrint()" style="margin-top:8px">Generate army sheet</button>
+</div>
+
+<div class="main">
+  <div id="platoonContainer">
+    <div class="empty">No platoons yet — add your first platoon from the sidebar.</div>
+  </div>
+</div>
+</div>
+
+<div id="printSheet"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// UNIT DATABASE — from Excel wardogs stats sheet
+// ═══════════════════════════════════════════════
+const UNITS = {
+  // Sol Union infantry (avail:null = composition-only, not standalone)
+  "Combat infantry":                {f:"SU",role:"Infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["RCM","melee blades","improvised AT melee"],kw:"Infantry",pts:14,avail:null,exposed:[],protected:[],main:null},
+  "WC LMG drone":                   {f:"SU",role:"Infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["ARQ LMG","melee blades"],kw:"Infantry",pts:15,avail:null,exposed:[],protected:[],main:null},
+  "combat scout":                   {f:"SU",role:"Infantry",skill:"D8",move:5,melee:1,def:7,struct:null,w:["RCM","melee blades","improvised AT melee"],kw:"infantry, scout",pts:21,avail:null,exposed:[],protected:[],main:null},
+  "Combat Engineer":                {f:"SU",role:"Infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["SCM","Antitank melee"],kw:"infantry, ECM, Demolitions",pts:18,avail:null,exposed:[],protected:[],main:null},
+  "Drone operator":                 {f:"SU",role:"Infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["FPD 2","melee blades","SCM"],kw:"infantry",pts:17,avail:null,exposed:[],protected:[],main:null},
+  "FPD carrier Drone":              {f:"SU",role:"Infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["melee blades"],kw:"infantry, drone carrier",pts:10,avail:null,exposed:[],protected:[],main:null},
+  "Urban Tactical engagement armor":{f:"SU",role:"Power armor",skill:"D8",move:4,melee:1,def:8,struct:null,w:["ARQ LMG","CPD","anti tank melee"],kw:"Infantry, jump, Tough",pts:46,avail:null,exposed:[],protected:[],main:null},
+  "anti armor Gunner":              {f:"SU",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["AAR","Antitank melee"],kw:"Infantry",pts:16,avail:null,exposed:[],protected:[],main:null},
+  "Pack Leader":                    {f:"SU",role:"infantry",skill:"D6",move:8,melee:2,def:7,struct:null,w:["SCM","claws","anti tank melee"],kw:"Feral, leashed, Apex",pts:28,avail:null,exposed:[],protected:[],main:null},
+  "Leashed Hybrid":                 {f:"SU",role:"infantry",skill:"D6",move:8,melee:1,def:7,struct:null,w:["SCM","claws","anti tank melee"],kw:"feral, leashed",pts:25,avail:null,exposed:[],protected:[],main:null},
+  "Leashed Hybrid gunner":          {f:"SU",role:"infantry",skill:"D6",move:8,melee:1,def:7,struct:null,w:["shotgun","claws","anti tank melee"],kw:"feral, leashed",pts:23,avail:null,exposed:[],protected:[],main:null},
+  // Sol Union vehicles (avail set = standalone selectable)
+  "Bull Duck":      {f:"SU",role:"light armor",skill:"D6",move:8,melee:2,def:9,struct:4,w:["GMP 60"],kw:"amphibious, Transport 8",pts:47,avail:"platoon",exposed:["GMP 60"],protected:[],main:null},
+  "Hoplite":        {f:"SU",role:"light armor",skill:"D6",move:8,melee:3,def:9,struct:4,w:["MTG 75","ARQ LMG"],kw:"ERA",pts:60,avail:"basic",exposed:["ARQ LMG"],protected:[],main:"MTG 75"},
+  "Spartan":        {f:"SU",role:"light armor",skill:"D6",move:8,melee:3,def:9,struct:4,w:["MAW","GOAT 100"],kw:"ERA",pts:57,avail:"platoon",exposed:["GOAT 100"],protected:[],main:"MAW"},
+  "Cataphract":     {f:"SU",role:"heavy armor",skill:"D6",move:6,melee:4,def:11,struct:10,w:["MMTGx","MTG 75","GMP 60"],kw:"MaDDs, ERA, Stable turret",pts:94,avail:"company",exposed:["GMP 60"],protected:["MTG 75"],main:"MMTGx"},
+  "MACS":           {f:"SU",role:"mecha",skill:"D6",move:6,melee:5,def:9,struct:6,w:["MTG 75","GOAT 100","MTG 75"],kw:"MaDDs",pts:81,avail:"company",exposed:["GOAT 100"],protected:["MTG 75","MTG 75"],main:null},
+  "MACS Suppressor":{f:"SU",role:"mecha",skill:"D6",move:6,melee:5,def:9,struct:6,w:["MAW","GOAT 100","MAW"],kw:"MaDDs",pts:73,avail:"company",exposed:["GOAT 100"],protected:["MAW","MAW"],main:null},
+  "Truck":          {f:"SU",role:"light armor",skill:"D6",move:7,melee:2,def:7,struct:2,w:[],kw:"Transport 4",pts:32,avail:"basic",exposed:[],protected:[],main:null},
+  "Truck Armed":    {f:"SU",role:"light armor",skill:"D6",move:7,melee:2,def:7,struct:2,w:["ARQ LMG"],kw:"Transport 4",pts:37,avail:"basic",exposed:["ARQ LMG"],protected:[],main:null},
+  // Eastern Coalition infantry
+  "Jade Warrior smg":   {f:"EC",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["QRAs","melee blades","improvised AT melee"],kw:"Infantry",pts:14,avail:null,exposed:[],protected:[],main:null},
+  "Jade Warrior Rifle": {f:"EC",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["QQSr","melee blades","improvised AT melee"],kw:"Infantry",pts:14,avail:null,exposed:[],protected:[],main:null},
+  "Jade Gunner":        {f:"EC",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["QxLMG","melee blades","improvised AT melee"],kw:"infantry",pts:17,avail:null,exposed:[],protected:[],main:null},
+  "Jade scouts":        {f:"EC",role:"infantry",skill:"D6",move:6,melee:1,def:6,struct:null,w:["QRAs","melee blades","anti tank melee"],kw:"infantry, Scout",pts:20,avail:null,exposed:[],protected:[],main:null},
+  "Jade Drone operator":{f:"EC",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["QRAS","melee blades","improvised AT melee"],kw:"Infantry, Drone",pts:14,avail:null,exposed:[],protected:[],main:null},
+  "Jade Signal":        {f:"EC",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["QRAS","melee blades","improvised AT melee"],kw:"Infantry, ECM",pts:20,avail:null,exposed:[],protected:[],main:null},
+  "Jade Fist":          {f:"EC",role:"infantry",skill:"D6",move:4,melee:1,def:7,struct:null,w:["QRAs","FIST","anti tank melee"],kw:"infantry",pts:22,avail:null,exposed:[],protected:[],main:null},
+  "Guardian frame":     {f:"EC",role:"infantry",skill:"D8",move:6,melee:1,def:8,struct:null,w:["QxLMG","QRAs","anti tank melee"],kw:"infantry, scout",pts:31,avail:null,exposed:[],protected:[],main:null},
+  // Eastern Coalition vehicles
+  "Hover Bee":              {f:"EC",role:"light armor",skill:"D6",move:10,melee:2,def:8,struct:6,w:["QxLMG"],kw:"Transport 6, hover",pts:55,avail:null,exposed:[],protected:["QxLMG"],main:null},
+  "cloud runner gun":       {f:"EC",role:"light armor",skill:"D6",move:12,melee:2,def:7,struct:4,w:["QxLMG"],kw:"scout",pts:48,avail:null,exposed:["QxLMG"],protected:[],main:null},
+  "cloud runner FIST":      {f:"EC",role:"light armor",skill:"D6",move:12,melee:2,def:7,struct:4,w:["FIST"],kw:"scout",pts:49,avail:null,exposed:["FIST"],protected:[],main:null},
+  "cloud runner Transport": {f:"EC",role:"light armor",skill:"D6",move:12,melee:2,def:7,struct:4,w:["APPDs"],kw:"scout, Transport 4",pts:43,avail:null,exposed:[],protected:[],main:null},
+  "iron cliff MBT":         {f:"EC",role:"heavy armor",skill:"D6",move:6,melee:3,def:10,struct:8,w:["lun ton","QxLMG"],kw:"turret, MaDDs",pts:74,avail:"company",exposed:["QxLMG"],protected:[],main:"lun ton"},
+  "Land Crab":              {f:"EC",role:"mecha",skill:"D6",move:8,melee:6,def:10,struct:6,w:["plasma hammer","QxLMG"],kw:"",pts:65,avail:"basic",exposed:["QxLMG"],protected:[],main:"plasma hammer"},
+  "celestial sword":        {f:"EC",role:"mecha",skill:"D8",move:9,melee:6,def:9,struct:8,w:["plasma lance","Qmax"],kw:"MaDDs, shield",pts:87,avail:"company",exposed:["Qmax"],protected:[],main:"plasma lance"}
+};
+
+// ═══════════════════════════════════════════════
+// WEAPON DATABASE — from Excel weapons sheet
+// ═══════════════════════════════════════════════
+const WEAPONS = {
+  "AAR":           {dmg:"D8", rof:1, range:'36"', opt:'24-30"', long:'42"',  rules:"Smoke 2"},
+  "ARQ LMG":       {dmg:"D4", rof:3, range:'36"', opt:'12-18"', long:'42"',  rules:"Infantry"},
+  "anti tank melee":{dmg:"melee",rof:1,range:"melee",opt:null,long:null,    rules:"AT melee"},
+  "Antitank melee":{dmg:"melee",rof:1,range:"melee",opt:null,long:null,     rules:"AT melee"},
+  "claws":         {dmg:"melee",rof:1,range:"melee",opt:null,long:null,      rules:"Melee"},
+  "melee blades":  {dmg:"melee",rof:1,range:"melee",opt:null,long:null,      rules:"Melee"},
+  "improvised AT melee":{dmg:"melee",rof:1,range:"melee",opt:null,long:null, rules:"IAT melee"},
+  "FIST":          {dmg:"D10",rof:1, range:'48"', opt:'24-32"', long:null,   rules:"Blast 2, Guided"},
+  "Fist":          {dmg:"D10",rof:1, range:'48"', opt:'24-32"', long:null,   rules:"Blast 2, Guided"},
+  "FPD 2":         {dmg:"D8", rof:1, range:"drone",opt:null,long:null,       rules:"Drone, CFD, Blast 2"},
+  "GMP 60":        {dmg:"D6", rof:1, range:'36"', opt:'30-36"', long:'56"',  rules:"Blast 2, Smoke, Infantry"},
+  "GOAT 100":      {dmg:"D12",rof:1, range:'48"', opt:'30-40"', long:null,   rules:"Guided, Blast 2"},
+  "lun ton":       {dmg:"D8", rof:2, range:'54"', opt:'36-42"', long:'66"',  rules:""},
+  "MAW":           {dmg:"D6", rof:3, range:'40"', opt:'20-30"', long:'52"',  rules:""},
+  "MMTGx":         {dmg:"D20",rof:1, range:'36"', opt:'24-30"', long:'48"',  rules:"Blast 4, Ignores cover, Brace"},
+  "MTG 75":        {dmg:"D8", rof:2, range:'48"', opt:'28-34"', long:'60"',  rules:"Blast 2"},
+  "CPD":           {dmg:"D8", rof:1, range:'6"',  opt:null,     long:null,   rules:"Blast 4, Placed"},
+  "plasma hammer": {dmg:"D10",rof:1, range:'36"', opt:'24-30"', long:null,   rules:"Blast 4"},
+  "plasma lance":  {dmg:"D8", rof:1, range:'36"', opt:'24-30"', long:null,   rules:"Blast 2"},
+  "Qmax":          {dmg:"D6", rof:3, range:'38"', opt:'30-36"', long:'48"',  rules:""},
+  "QQSr":          {dmg:"D6", rof:1, range:'30"', opt:'20-26"', long:'40"',  rules:"Infantry"},
+  "QRAs":          {dmg:"D4", rof:3, range:'12"', opt:'4-10"',  long:null,   rules:"Infantry"},
+  "QRAS":          {dmg:"D4", rof:3, range:'12"', opt:'4-10"',  long:null,   rules:"Infantry"},
+  "QxLMG":         {dmg:"D4", rof:3, range:'34"', opt:'24-30"', long:'48"',  rules:""},
+  "RCM":           {dmg:"D4", rof:2, range:'24"', opt:'8-14"',  long:'30"',  rules:"Infantry"},
+  "SCM":           {dmg:"D4", rof:3, range:'18"', opt:'6-10"',  long:null,   rules:"Infantry"},
+  "shotgun":       {dmg:"D4", rof:1, range:'12"', opt:null,     long:null,   rules:"Blast 2"},
+  "APPDs":         {dmg:"D4", rof:3, range:"contact",opt:null,  long:null,   rules:"APPD, triggers on charge"},
+};
+
+// ═══════════════════════════════════════════════
+// SQUAD TYPES — from Excel squad types sheet
+// ═══════════════════════════════════════════════
+const SQUADS = {
+  // Sol Union
+  "Combat Team":       {f:"SU",avail:"basic",  troops:[{u:"Combat infantry",n:3},{u:"WC LMG drone",n:1}],                                         pts:57,  transports:[],          upgrade:null},
+  "Scout Team":        {f:"SU",avail:"company", troops:[{u:"combat scout",n:4}],                                                                    pts:84,  transports:["Truck","Truck Armed"], upgrade:null},
+  "Drone Combat Team": {f:"SU",avail:"company", troops:[{u:"Combat infantry",n:2},{u:"Drone operator",n:1},{u:"FPD carrier Drone",n:1}],            pts:55,  transports:["Truck","Truck Armed"], upgrade:null},
+  "Engineer Team":     {f:"SU",avail:"company", troops:[{u:"Combat Engineer",n:4}],                                                                 pts:72,  transports:["Truck","Truck Armed"], upgrade:null},
+  "Anti Armor Team":   {f:"SU",avail:"platoon", troops:[{u:"Combat infantry",n:3},{u:"anti armor Gunner",n:1}],                                     pts:58,  transports:["Truck","Truck Armed"], upgrade:null},
+  "PA Combat Team":    {f:"SU",avail:"basic",   troops:[{u:"Urban Tactical engagement armor",n:2}],                                                 pts:92,  transports:[],          upgrade:null},
+  // Eastern Coalition
+  "Jade Warriors":     {f:"EC",avail:"basic",   troops:[{u:"Jade Warrior smg",n:1},{u:"Jade Warrior Rifle",n:4},{u:"Jade Gunner",n:1}],            pts:87,  transports:["Hover Bee"], upgrade:null},
+  "Jade Scouts":       {f:"EC",avail:"platoon", troops:[{u:"Jade scouts",n:4}],                                                                     pts:80,  transports:["cloud runner Transport"], upgrade:null},
+  "Jade Signals":      {f:"EC",avail:"platoon", troops:[{u:"Jade Warrior smg",n:3},{u:"Jade Signal",n:1}],                                          pts:62,  transports:["cloud runner Transport"], upgrade:null},
+  "Drone Team":        {f:"EC",avail:"platoon", troops:[{u:"Jade Warrior smg",n:2},{u:"Jade Drone operator",n:2}],                                  pts:56,  transports:["cloud runner Transport"], upgrade:null},
+  "Jade Fist":         {f:"EC",avail:"platoon", troops:[{u:"Jade Warrior smg",n:2},{u:"Jade Fist",n:2}],                                            pts:72,  transports:["cloud runner Transport"], upgrade:null},
+  "Guardian Frame":    {f:"EC",avail:"platoon", troops:[{u:"Guardian frame",n:3}],                                                                  pts:93,  transports:[],          upgrade:null},
+  "Cloud Runners":     {f:"EC",avail:"platoon", troops:[{u:"cloud runner gun",n:3}],                                                                pts:144, transports:[],          upgrade:{label:"Replace 1 Gun with FIST (+1pt)",pts:1}},
+};
+
+// ═══════════════════════════════════════════════
+// CRITICAL HIT TABLE
+// ═══════════════════════════════════════════════
+const CRIT_TABLE=[
+  [null,null,"SEC_A","MOB_HALF","SEC_B","SENSOR","MOB_HALF","ARMOR_1"],
+  [null,"MAIN_DMG","MOB_HALF","SEC_A","ARMOR_1","SENSOR","ARMOR_2","IMMOBILIZED"],
+  ["CATASTROPHIC",null,"MAIN_DMG","MOB_HALF","SENSOR","ARMOR_2","IMMOBILIZED","CATASTROPHIC"]
+];
+
+function unitCrits(uName){
+  const u=UNITS[uName];if(!u||!u.struct)return[];
+  const tally=new Map();
+  CRIT_TABLE.forEach(row=>row.forEach(code=>{
+    if(!code)return;
+    let label='';
+    if(code==='SEC_A'){
+      label=u.exposed&&u.exposed.length?'Exposed destroyed: '+u.exposed.join('/'):'Exposed wpn hit (none)';
+    } else if(code==='SEC_B'){
+      label=u.protected&&u.protected.length?'Protected destroyed: '+u.protected.join('/'):'Protected wpn hit (none)';
+    } else if(code==='MAIN_DMG'){
+      if(uName==='MACS'||uName==='MACS Suppressor') label='Weapon system damaged (random)';
+      else label=u.main?'Main wpn damaged: '+u.main:'Main wpn hit (none)';
+    } else {
+      const m={'MOB_HALF':'Mobility ½ (permanent)','SENSOR':'Sensor dmg −1 Fortune','ARMOR_1':'Armor −1 defense','ARMOR_2':'Armor −2 defense','IMMOBILIZED':'Immobilized','CATASTROPHIC':'Catastrophic — destroyed'};
+      label=m[code]||code;
+    }
+    if(!tally.has(label))tally.set(label,{label,count:0,cat:code==='CATASTROPHIC'});
+    tally.get(label).count++;
+  }));
+  return[...tally.values()];
+}
+
+const ASSET_LIMITS={"500":{air:2,art:1},"1000":{air:3,art:2},"1500":{air:6,art:4}};
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let ST={faction:"SU",size:"500",platoons:[],nextPid:1,nextSid:1};
+
+function setFaction(el){
+  document.querySelectorAll('#facTogs .tog').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  ST.faction=el.dataset.val;
+  ST.platoons=[];ST.nextPid=1;ST.nextSid=1;
+  refresh();
+}
+function setSize(el){
+  document.querySelectorAll('#sizeTogs .tog').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  ST.size=el.dataset.val;
+  refresh();
+}
+
+// ═══════════════════════════════════════════════
+// POINTS
+// ═══════════════════════════════════════════════
+function secPts(s){
+  if(s.type==='squad'){
+    const sq=SQUADS[s.name];if(!sq)return 0;
+    let p=sq.pts+(s.upgrade?sq.upgrade.pts:0);
+    if(s.transport){const tu=UNITS[s.transport];if(tu)p+=tu.pts;}
+    return p;
+  }
+  const u=UNITS[s.name];return u?u.pts:0;
+}
+function platPts(p){return p.sections.reduce((a,s)=>a+secPts(s),0);}
+function assetPts(){
+  return(parseInt(document.getElementById('airstrikes').value)||0)*12
+        +(parseInt(document.getElementById('artillery').value)||0)*15;
+}
+function totalPts(){return ST.platoons.reduce((a,p)=>a+platPts(p),0)+assetPts();}
+
+// ═══════════════════════════════════════════════
+// PLATOON / SECTION MANAGEMENT
+// ═══════════════════════════════════════════════
+function addPlatoon(){
+  ST.platoons.push({id:ST.nextPid++,sections:[]});refresh();
+}
+function removePlatoon(pid){
+  ST.platoons=ST.platoons.filter(p=>p.id!==pid);refresh();
+}
+function addSection(pid){
+  const sel=document.getElementById('addSec_'+pid);
+  if(!sel||!sel.value)return;
+  const [type,name]=sel.value.split('||');
+  const p=ST.platoons.find(p=>p.id===pid);if(!p)return;
+  if(p.sections.length>=4){alert('Maximum 4 sections per platoon.');return;}
+  p.sections.push({sid:ST.nextSid++,type,name,upgrade:false,transport:null});
+  refresh();
+}
+function removeSection(pid,sid){
+  const p=ST.platoons.find(p=>p.id===pid);if(!p)return;
+  p.sections=p.sections.filter(s=>s.sid!==sid);refresh();
+}
+function toggleUpgrade(pid,sid){
+  const p=ST.platoons.find(p=>p.id===pid);if(!p)return;
+  const s=p.sections.find(s=>s.sid===sid);if(!s)return;
+  s.upgrade=!s.upgrade;refresh();
+}
+function setTransport(pid,sid,val){
+  const p=ST.platoons.find(p=>p.id===pid);if(!p)return;
+  const s=p.sections.find(s=>s.sid===sid);if(!s)return;
+  s.transport=val||null;refresh();
+}
+
+// ═══════════════════════════════════════════════
+// VALIDATION
+// ═══════════════════════════════════════════════
+function validate(){
+  const warns=[];
+  const lim=parseInt(ST.size),tp=totalPts();
+  const air=parseInt(document.getElementById('airstrikes').value)||0;
+  const art=parseInt(document.getElementById('artillery').value)||0;
+  const alim=ASSET_LIMITS[ST.size];
+
+  if(tp>lim) warns.push({msg:`Over points limit: ${tp}/${lim}pts`,err:true});
+  if(ST.platoons.length<3) warns.push({msg:`Company has ${ST.platoons.length} platoon(s) — minimum 3 required`});
+  if(ST.platoons.length>4) warns.push({msg:`${ST.platoons.length} platoons — maximum 4`,err:true});
+  if(air>0&&art>0) warns.push({msg:`Cannot mix airstrikes and artillery`,err:true});
+  if(air>alim.air) warns.push({msg:`Airstrikes: max ${alim.air} at ${ST.size}pts`,err:true});
+  if(art>alim.art) warns.push({msg:`Artillery: max ${alim.art} at ${ST.size}pts`,err:true});
+
+  // Company-tier limits
+  const maxCompany=Math.max(1,Math.floor(ST.platoons.length/2));
+  const companyCounts={};
+  ST.platoons.forEach(p=>p.sections.forEach(s=>{
+    const av=s.type==='vehicle'?(UNITS[s.name]||{}).avail:(SQUADS[s.name]||{}).avail;
+    if(av==='company') companyCounts[s.name]=(companyCounts[s.name]||0)+1;
+  }));
+  Object.entries(companyCounts).forEach(([n,c])=>{
+    if(c>maxCompany) warns.push({msg:`${n}: ${c} in list — max 1 per 2 platoons`,err:true});
+  });
+
+  // Per-platoon
+  ST.platoons.forEach((p,i)=>{
+    const n=p.sections.length;
+    if(n===0) warns.push({msg:`Platoon ${i+1}: empty`});
+    else if(n===1) warns.push({msg:`Platoon ${i+1}: only 1 section — minimum 2`});
+    else if(n===2&&p.sections[0].name!==p.sections[1].name)
+      warns.push({msg:`Platoon ${i+1}: 2-section platoon — both sections must match`});
+
+    // Spartan: max 1 per platoon
+    const spart=p.sections.filter(s=>s.name==='Spartan').length;
+    if(spart>1) warns.push({msg:`Platoon ${i+1}: max 1 Spartan per platoon`,err:true});
+
+    // Platoon-tier: max 1 per platoon
+    const platCounts={};
+    p.sections.forEach(s=>{
+      const av=s.type==='vehicle'?(UNITS[s.name]||{}).avail:(SQUADS[s.name]||{}).avail;
+      if(av==='platoon') platCounts[s.name]=(platCounts[s.name]||0)+1;
+    });
+    Object.entries(platCounts).forEach(([n,c])=>{
+      if(c>1) warns.push({msg:`Platoon ${i+1}: ${n} — max 1 per platoon`});
+    });
+  });
+  return warns;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+function availBadge(av){
+  if(!av)return'';
+  return`<span class="avail ${av.toLowerCase()}">${av}</span>`;
+}
+
+function sectionOpts(){
+  const squads=Object.entries(SQUADS).filter(([,v])=>v.f===ST.faction)
+    .map(([n,v])=>`<option value="squad||${n}">${n} — ${v.pts}pts ${v.avail?'['+v.avail+']':''}</option>`).join('');
+  const vehicles=Object.entries(UNITS).filter(([,v])=>v.f===ST.faction&&v.avail&&v.struct!==null)
+    .map(([n,v])=>`<option value="vehicle||${n}">${n} — ${v.pts}pts [${v.avail}]</option>`).join('');
+  return`<optgroup label="— Squad types —">${squads}</optgroup><optgroup label="— Vehicles &amp; Mecha —">${vehicles}</optgroup>`;
+}
+
+function renderPlatoons(){
+  const c=document.getElementById('platoonContainer');
+  if(!ST.platoons.length){
+    c.innerHTML='<div class="empty">No platoons yet — add your first platoon from the sidebar.</div>';return;
+  }
+  c.innerHTML=ST.platoons.map((p,pi)=>{
+    const pp=platPts(p);
+    const lw=platoonWarns(p);
+    const rows=p.sections.map(s=>{
+      const pts=secPts(s);
+      let nameHtml='',subHtml='',extraHtml='';
+      if(s.type==='squad'){
+        const sq=SQUADS[s.name];
+        nameHtml=`<span class="sec-name">${s.name}${availBadge(sq?sq.avail:'')}</span>`;
+        if(sq){
+          const comp=sq.troops.map(t=>`${t.n}× ${t.u}`).join(', ');
+          subHtml=`<div class="sec-sub">${comp}</div>`;
+          // Upgrade toggle (Cloud Runners FIST swap)
+          if(sq.upgrade){
+            extraHtml+=`<div><span class="opt-toggle ${s.upgrade?'on':''}" onclick="toggleUpgrade(${p.id},${s.sid})">${s.upgrade?'✓ ':''}${sq.upgrade.label}</span></div>`;
+          }
+          // Transport selector
+          if(sq.transports&&sq.transports.length){
+            const opts=sq.transports.map(t=>`<option value="${t}" ${s.transport===t?'selected':''}>${t} (+${(UNITS[t]||{pts:0}).pts}pts)</option>`).join('');
+            extraHtml+=`<div style="margin-top:4px"><select style="width:auto;font-size:11px" onchange="setTransport(${p.id},${s.sid},this.value)"><option value="">No transport</option>${opts}</select></div>`;
+          }
+        }
+      } else {
+        const u=UNITS[s.name];
+        nameHtml=`<span class="sec-name">${s.name}${availBadge(u?u.avail:'')}</span>`;
+        if(u) subHtml=`<div class="sec-sub">${u.role} · Def ${u.def}${u.struct?' · HP '+u.struct:''} · Move ${u.move}"${u.kw?' · '+u.kw:''}</div>`;
+      }
+      return`<div class="sec-row">
+        <div class="sec-info">${nameHtml}${subHtml}${extraHtml}</div>
+        <div class="sec-pts">${pts}pts</div>
+        <div class="sec-acts"><button class="btn small danger" onclick="removeSection(${p.id},${s.sid})">×</button></div>
+      </div>`;
+    }).join('');
+
+    return`<div class="platoon">
+      <div class="pl-head">
+        <span class="pl-title">Platoon ${pi+1}</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="pl-pts">${pp}pts</span>
+          <button class="btn small danger" onclick="removePlatoon(${p.id})">Remove</button>
+        </div>
+      </div>
+      <div class="pl-body">
+        ${rows||'<div style="color:#555;font-size:11px;margin-bottom:8px">No sections yet</div>'}
+        ${lw.map(w=>`<div class="pl-warn${w.err?' err':''}">${w.msg}</div>`).join('')}
+        <div class="add-row">
+          <select id="addSec_${p.id}">${sectionOpts()}</select>
+          <button class="btn primary" onclick="addSection(${p.id})">+ Add</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function platoonWarns(p){
+  const w=[];
+  const n=p.sections.length;
+  if(n===1) w.push({msg:'Only 1 section — minimum 2'});
+  else if(n===2&&p.sections[0].name!==p.sections[1].name) w.push({msg:'2-section platoon — sections must match'});
+  if(p.sections.filter(s=>s.name==='Spartan').length>1) w.push({msg:'Max 1 Spartan per platoon',err:true});
+  return w;
+}
+
+function renderPoints(){
+  const tp=totalPts(),lim=parseInt(ST.size);
+  const pct=Math.min(100,tp/lim*100);
+  document.getElementById('ptsUsed').textContent=tp;
+  document.getElementById('ptsOf').textContent=`of ${lim}pts`;
+  document.getElementById('ptsRemain').textContent=`${Math.max(0,lim-tp)} remaining`;
+  const f=document.getElementById('ptsFill');
+  f.style.width=pct+'%';
+  f.className='pts-fill'+(tp>lim?' over':tp>lim*0.9?' warn':'');
+}
+
+function renderWarnings(){
+  document.getElementById('warnsPanel').innerHTML=
+    validate().map(w=>`<div class="warn-item${w.err?' err':''}">${w.err?'⚠':'△'} ${w.msg}</div>`).join('');
+}
+
+function renderAssetWarn(){
+  const air=parseInt(document.getElementById('airstrikes').value)||0;
+  const art=parseInt(document.getElementById('artillery').value)||0;
+  const alim=ASSET_LIMITS[ST.size];
+  const el=document.getElementById('assetWarn');
+  if(air>0&&art>0){el.style.display='block';el.textContent='Cannot mix airstrikes and artillery';}
+  else if(air>alim.air){el.style.display='block';el.textContent=`Max ${alim.air} airstrikes at ${ST.size}pts`;}
+  else if(art>alim.art){el.style.display='block';el.textContent=`Max ${alim.art} artillery at ${ST.size}pts`;}
+  else el.style.display='none';
+}
+
+function refresh(){renderPlatoons();renderPoints();renderWarnings();renderAssetWarn();}
+
+// ═══════════════════════════════════════════════
+// PRINT SHEET
+// ═══════════════════════════════════════════════
+function wpnHtml(wname){
+  const key=Object.keys(WEAPONS).find(k=>k.toLowerCase()===wname.toLowerCase());
+  const w=key?WEAPONS[key]:null;
+  if(!w||w.range==='melee'||w.range==='contact')return null;
+  const rangeStr=w.opt?`Rng ${w.range} · Opt ${w.opt}${w.long?' · Long '+w.long:''}`:w.range?`Rng ${w.range}`:'';
+  return`<div class="p-wpn"><b>${wname}</b> ${w.dmg} ROF${w.rof}${rangeStr?' · '+rangeStr:''}${w.rules?' · '+w.rules:''}</div>`;
+}
+
+function printVehicleCard(uName,label,pts){
+  const u=UNITS[uName];if(!u)return'';
+  const statLine=`${u.role} · Skill ${u.skill} · Move ${u.move}" · Def ${u.def} · Melee ${u.melee} · HP ${u.struct}`;
+  const wpns=u.w.map(wpnHtml).filter(Boolean).join('');
+  const kw=u.kw?`<div class="p-kw">${u.kw}</div>`:'';
+  const boxes=Array(u.struct).fill('<span class="p-sbox"></span>').join('');
+  const crits=unitCrits(uName);
+  const critHtml=crits.length?`<div class="p-crits">${crits.map(c=>`<div class="p-crit">${Array(c.count).fill('<span class="p-cbox"></span>').join('')}<span>${c.label}</span></div>`).join('')}</div>`:'';
+  return`<div class="p-unit">
+    <div class="p-uname"><span>${label}</span><span>${pts}pts</span></div>
+    <div class="p-stat">${statLine}</div>
+    ${wpns?`<div class="p-wpns">${wpns}</div>`:''}
+    ${kw}
+    <div class="p-struct-row"><span class="p-struct-label">Structure:</span>${boxes}</div>
+    ${critHtml}
+  </div>`;
+}
+
+function printSquadCard(sName,sec){
+  const sq=SQUADS[sName];if(!sq)return'';
+  const pts=secPts(sec);
+  const comp=sq.troops.map(t=>`${t.n}× ${t.u}`).join(' + ')+(sec.upgrade&&sq.upgrade?' + '+sq.upgrade.label:'');
+  // Collect all unique ranged weapons across troop types
+  const allWpns=new Set();
+  sq.troops.forEach(t=>{const u=UNITS[t.u];if(u)u.w.forEach(w=>allWpns.add(w));});
+  const wpns=[...allWpns].map(wpnHtml).filter(Boolean).join('');
+  // Use first troop's stat line
+  const prim=UNITS[sq.troops[0].u];
+  const statLine=prim?`${prim.role} · Skill ${prim.skill} · Move ${prim.move}" · Def ${prim.def} · Melee ${prim.melee}`:'';
+  const kwSet=new Set();
+  sq.troops.forEach(t=>{const u=UNITS[t.u];if(u&&u.kw)u.kw.split(',').forEach(k=>kwSet.add(k.trim()));});
+  const kw=kwSet.size?`<div class="p-kw">${[...kwSet].join(', ')}</div>`:'';
+  let transHtml='';
+  if(sec.transport){
+    transHtml=printVehicleCard(sec.transport,sec.transport+' (transport)',UNITS[sec.transport]?UNITS[sec.transport].pts:0);
+  }
+  return`<div class="p-unit">
+    <div class="p-uname"><span>${sName}</span><span>${pts}pts</span></div>
+    <div class="p-comp">${comp}</div>
+    ${statLine?`<div class="p-stat">${statLine}</div>`:''}
+    ${wpns?`<div class="p-wpns">${wpns}</div>`:''}
+    ${kw}
+  </div>${transHtml}`;
+}
+
+function doPrint(){
+  const name=document.getElementById('armyName').value||'Unnamed Force';
+  const air=parseInt(document.getElementById('airstrikes').value)||0;
+  const art=parseInt(document.getElementById('artillery').value)||0;
+  const tp=totalPts(),lim=parseInt(ST.size);
+  const ws=validate();
+  const facName=ST.faction==='SU'?'Sol Union':'Eastern Coalition';
+
+  let html=`<div class="p-head"><div class="p-army">${name}</div><div class="p-meta">${facName} · ${ST.size}pt game · ${tp}/${lim}pts</div></div>`;
+
+  if(air>0||art>0){
+    html+=`<div class="p-assets"><b>Strategic assets:</b> `;
+    if(air>0)html+=`${air}× Airstrike (D20 ROF1 Blast 4, scout-called, ${air*12}pts) `;
+    if(art>0)html+=`${art}× Artillery Barrage (D12 ROF4 Blast 4, scout-called, ${art*15}pts)`;
+    html+=`</div>`;
+  }
+
+  ST.platoons.forEach((p,pi)=>{
+    html+=`<div class="p-platoon"><div class="p-pl-title"><span>Platoon ${pi+1}</span><span>${platPts(p)}pts</span></div>`;
+    p.sections.forEach(s=>{
+      if(s.type==='squad') html+=printSquadCard(s.name,s);
+      else html+=printVehicleCard(s.name,s.name,secPts(s));
+    });
+    html+=`</div>`;
+  });
+
+  if(ws.length){
+    html+=`<div class="p-warns"><b>Warnings:</b>`;
+    ws.forEach(w=>html+=`<div class="p-witem">${w.err?'⚠':'△'} ${w.msg}</div>`);
+    html+=`</div>`;
+  }
+  html+=`<div class="p-total">Total: ${tp}pts of ${lim}pts</div>`;
+  document.getElementById('printSheet').innerHTML=html;
+  window.print();
+}
+
+refresh();
+</script>
+</body>
+</html>
