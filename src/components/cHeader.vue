@@ -16,13 +16,13 @@
             <RouterLink class="nav-link nav-pill" to="/blog">Blog</RouterLink>
           </li>
           <li class="nav-item">
-            <a class="nav-link nav-pill" href="/#About">About</a>
+            <RouterLink class="nav-link nav-pill" :to="{ path: '/', hash: '#About' }">About</RouterLink>
           </li>
 
           <li v-for="game in games" :key="game.id" class="nav-item">
-            <a class="nav-link nav-pill" :href="`/#${game.anchorId || game.id}`">
+            <RouterLink class="nav-link nav-pill" :to="{ path: '/', hash: `#${game.anchorId || game.id}` }">
               {{ game.navLabel || game.title }}
-            </a>
+            </RouterLink>
           </li>
           <li class="nav-item">
             <RouterLink class="nav-link nav-pill" to="/store">Store</RouterLink>
