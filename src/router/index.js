@@ -5,6 +5,8 @@ import vAetherCupDetail from '@/View/vAetherCupDetail.vue'
 import vCompanyOfAshDetail from '@/View/vCompanyOfAshDetail.vue'
 import vStore from '@/View/vStore.vue'
 import vBlog from '@/View/vBlog.vue'
+import vArmyBuilder from '@/View/vArmyBuilder.vue'
+import vCombatCalc from '@/View/vCombatCalc.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,6 +40,16 @@ const router = createRouter({
       path: '/blog',
       name: 'blog',
       component: vBlog,
+    },
+    {
+      path: '/armybuilder',
+      name: 'armybuilder',
+      component: vArmyBuilder,
+    },
+    {
+      path: '/combatcalc',
+      name: 'combatcalc',
+      component: vCombatCalc,
     },
   ],
   scrollBehavior(to) {

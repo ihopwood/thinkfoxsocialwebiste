@@ -16,7 +16,7 @@
 
                     <!-- Tools Row -->
                     <div class="tools-row mb-5">
-                        <a :href="armyBuilderUrl" target="_blank" rel="noopener" class="tool-card">
+                        <RouterLink :to="armyBuilderUrl" class="tool-card">
                             <div class="tool-icon"><i class="bi bi-layout-text-sidebar-reverse"></i></div>
                             <div>
                                 <p class="tool-label">Army Builder</p>
@@ -24,8 +24,8 @@
                                     structure.</p>
                             </div>
                             <span class="tool-arrow">→</span>
-                        </a>
-                        <a :href="combatCalcUrl" target="_blank" rel="noopener" class="tool-card">
+                        </RouterLink>
+                        <RouterLink :to="combatCalcUrl" class="tool-card">
                             <div class="tool-icon"><i class="bi bi-calculator"></i></div>
                             <div>
                                 <p class="tool-label">Combat Calculator</p>
@@ -33,7 +33,7 @@
                                     modifiers.</p>
                             </div>
                             <span class="tool-arrow">→</span>
-                        </a>
+                        </RouterLink>
                     </div>
 
                     <!-- Features -->
@@ -80,8 +80,8 @@ export default {
     components: { cHeader, cFooter },
     data() {
         return {
-            armyBuilderUrl: '/src/assets/games/companyofash/pages/ArmyBuilder.html',
-            combatCalcUrl: '/src/assets/games/companyofash/pages/CombatCac.html',
+            armyBuilderUrl: '/armybuilder',
+            combatCalcUrl: '/combatcalc',
             features: [
                 { title: 'Tactical Squad Combat', desc: 'Lead your Company through intense skirmish battles using positioning, cover mechanics, and coordinated squad maneuvers.' },
                 { title: 'Army Builder Tools', desc: 'Customize your forces with the interactive Army Builder. Select units, weapons, and balance your force composition.' },
@@ -101,7 +101,7 @@ export default {
         buy(product) {
             if (product.price === 0) {
                 const url = product.name === 'Army Builder' ? this.armyBuilderUrl : this.combatCalcUrl;
-                window.open(url, '_blank');
+                this.$router.push(url);
             } else {
                 alert(`Added to cart: ${product.name}`);
             }
