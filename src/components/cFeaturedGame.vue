@@ -6,6 +6,7 @@
                 <p v-if="game.kicker" class="featured-kicker mb-2">{{ game.kicker }}</p>
                 <h1 class="featured-title mb-2">{{ game.title }}</h1>
                 <p class="featured-intro mb-0">{{ game.intro }}</p>
+                <RouterLink v-if="ctaTo" :to="ctaTo" class="featured-cta-btn mt-3">{{ ctaLabel }}</RouterLink>
             </header>
 
             <div class="featured-content">
@@ -48,7 +49,32 @@ export default {
                 logoAssets[`/src/assets/games/${logoPath}`]
 
             return bundledAsset || logoPath
+        },
+        ctaTo() {
+            return this.game.ctaTo || ''
+        },
+        ctaLabel() {
+            return this.game.ctaLabel || 'Learn more'
         }
     }
 }
 </script>
+
+<style scoped>
+.featured-cta-btn {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    background: #0f6d73;
+    color: #f3f9f9;
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    transition: background-color 0.2s ease;
+}
+
+.featured-cta-btn:hover {
+    background: #0a5156;
+    color: #f3f9f9;
+}
+</style>

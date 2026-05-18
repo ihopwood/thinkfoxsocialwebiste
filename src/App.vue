@@ -1,11 +1,11 @@
 <template>
   <div class="app-wrapper">
-    <VPage />
+    <router-view />
   </div>
 </template>
 
 <script setup>
-import VPage from './View/vPage.vue';
+// No need to import VPage here
 </script>
 
 <style scoped>

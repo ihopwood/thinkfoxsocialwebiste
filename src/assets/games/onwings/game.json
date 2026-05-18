@@ -6,6 +6,8 @@
   "kicker": "Featured Game",
   "title": "OnWings: World War II Aerial Combat",
   "intro": "Immerse yourself in the golden age of piston-engine flight with a tabletop game built to capture the intensity, strategy, and split-second decisions of fighter-to-fighter combat.",
+  "ctaLabel": "Visit On Wings Store",
+  "ctaTo": "/onwings",
   "logoPath": "games/onwings/logo/onwingslogo.png",
   "logoAlt": "OnWings Logo",
   "features": [
